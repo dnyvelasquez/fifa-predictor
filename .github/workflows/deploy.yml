@@ -3,7 +3,10 @@ name: Deploy Angular to GitHub Pages
 on:
   push:
     branches:
-      - main  # Se ejecuta solo cuando haces push a main
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -11,21 +14,24 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Angular app
         run: npx ng build fifa-predictor --configuration production --base-href="/fifa-predictor/"
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/fifa-predictor/browser
