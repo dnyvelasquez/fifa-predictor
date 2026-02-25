@@ -69,12 +69,14 @@
     overflow: auto; 
     border: 1px solid #eee; 
     border-radius: 12px; 
+    
 }
 
 .grid {
     display: grid;
     grid-auto-rows: minmax(56px, auto);
     min-width: 720px;
+    
 }
 
 .bottom {
@@ -89,6 +91,7 @@
     align-items: center;
     background: #fff;
     color: #1f2937;
+    
 }
 
 .cell.head {
@@ -149,4 +152,8 @@ mat-select {
 :host ::ng-deep .asig-panel .mat-mdc-option.mdc-list-item--disabled .mdc-list-item__primary-text {
   color: #9ca3af !important;  
   opacity: 1 !important;
+}
+
+.equipo-cell {
+  font-size: xx-small !important;
 }

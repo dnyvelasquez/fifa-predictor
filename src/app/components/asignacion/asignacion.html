@@ -8,17 +8,17 @@
         </div>
 
         <div class="button-container">
-        <button class="left" mat-menu-item routerLink="/admin">
-            <mat-icon>arrow_back</mat-icon>
-            <span>Volver</span>
-        </button>
-        <button mat-stroked-button class="reset" (click)="resetAll()">
-            <mat-icon>restart_alt</mat-icon>&nbsp;Reset
-        </button>
-        <button class="right" mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            <span>Logout</span>
-        </button>
+            <button class="left" mat-menu-item routerLink="/admin">
+                <mat-icon>arrow_back</mat-icon>
+                <span>Volver</span>
+            </button>
+            <button mat-stroked-button class="reset" (click)="resetAll()">
+                <mat-icon>restart_alt</mat-icon>&nbsp;Reset
+            </button>
+            <button class="right" mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Logout</span>
+            </button>
         </div>
 
         @if (errorMsg()) { <div class="err">{{ errorMsg() }}</div> }
@@ -28,30 +28,29 @@
 
             <div class="grid" 
                 [style.gridTemplateColumns]="'100px ' + '1fr '.repeat(participantes().length)">
-            <div class="cell head sticky">&nbsp;</div>
-            @for (p of participantes(); track p.id) {
-                <div class="cell head sticky">{{ p.numero }} - {{ p.nombre }}</div>
-            }
-
-            @for (d of divisiones(); track d) {
-                <div class="cell head sticky-left">{{ d }}</div>
-
+                <div class="cell head sticky">&nbsp;</div>
                 @for (p of participantes(); track p.id) {
-                <div class="cell">
-                    <mat-select
-                        [value]="valorCelda(d, p.nombre)"
-                        (selectionChange)="onChangeCelda(d, p.nombre, $event.value)"
-                        disableOptionCentering
-                        panelClass="asig-panel"
-                    >
-                    <mat-option [value]="null">— Sin asignación —</mat-option>
-                    @for (eq of opcionesPara(d); track eq.id) {
-                        <mat-option [value]="eq.id">{{ eq.nombre }}</mat-option>
-                    }
-                    </mat-select>
-                </div>
+                    <div class="cell head sticky">{{ p.numero }} - {{ p.nombre }}</div>
                 }
-            }
+                
+                @for (d of divisiones(); track d) {
+                    <div class="cell head sticky-left">Grupo {{ d }}</div>
+                    @for (p of participantes(); track p.id) {
+                        <div class="cell">
+                            <mat-select
+                                [value]="valorCelda(d, p.nombre)"
+                                (selectionChange)="onChangeCelda(d, p.nombre, $event.value)"
+                                disableOptionCentering
+                                panelClass="asig-panel"
+                            >
+                            <mat-option [value]="null">— Sin asignación —</mat-option>
+                            @for (eq of opcionesPara(d); track eq.id) {                                
+                                <mat-option [value]="eq.id">{{ eq.nombre }}</mat-option>
+                            }
+                            </mat-select>
+                        </div>
+                    }
+                }
             </div>
         </div>
 
