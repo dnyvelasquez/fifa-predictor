@@ -25,7 +25,7 @@
               "src/custom-theme.scss",
               "src/styles.css"
             ],
-            "baseHref": "/",
+            "baseHref": "/fifa-predictor/",
             "outputPath": "dist/fifa-predictor"
           },
           "configurations": {
