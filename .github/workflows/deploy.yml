@@ -23,7 +23,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Angular app
         run: npx ng build fifa-predictor --configuration production --base-href="/fifa-predictor/"
