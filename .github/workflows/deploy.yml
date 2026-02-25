@@ -2,8 +2,7 @@ name: Deploy Angular to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -11,7 +10,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,4 +32,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/fifa-predictor/browser
+          publish_dir: ./dist/fifa-predictor
+          enable_jekyll: false
