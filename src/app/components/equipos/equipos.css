@@ -1,7 +1,7 @@
 .equipos-container {
   padding-top: 80px;
   padding-bottom: 20px;
-  background-color: #003366;
+  background-color: #003B73;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -59,11 +59,10 @@
 
 .equipo{
   display: flex;
+  flex-direction: column;
   align-items: center;
   font-weight: bold;
-  justify-content: space-between;
   padding: 0px 8px;
-  gap: 20px;
 }
 
 .score{
@@ -72,21 +71,14 @@
 
 .equipo-logo {
   width: 60px;
-  height: 60px;
+  height: 40px;
   padding: 0px 8px 0px 8px;
-}
-
-.info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.9rem;
-padding-left: 12px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .participante {
+  color: #555;
   font-weight: bold;
 }
 
@@ -131,4 +123,36 @@ padding-left: 12px;
     margin-top: 6px;
     align-items: center;
   }
+}
+
+
+
+
+
+
+
+.grid-row {
+  display: grid;
+  grid-template-columns: 
+    1.2fr     /* Logo */
+    2fr   /* Equipo */
+    1.2fr     /* Grupo */
+    2fr     /* Puntos */
+    2fr;  /* Participante */
+
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  background-color: white;
+  color: #000;
+}
+
+
+.chip-grupo {
+  background-color: #003B73; 
+  color: #fff;
+  font-size: 0.7em;
+  padding: 4px;
+  border-radius: 8px;
 }

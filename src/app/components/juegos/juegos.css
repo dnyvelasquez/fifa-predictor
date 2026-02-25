@@ -1,7 +1,7 @@
 .juegos-container {
   padding-top: 80px;
   padding-bottom: 20px;
-  background-color: #003366;
+  background-color: #003B73;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -34,24 +34,6 @@
 .table-container {
   overflow-x: auto;
   border-radius: 12px;
-}
-
-.juegos-table {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  color: #000;
-  background-color: white;
-  overflow: hidden; 
-}
-
-.equipos {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .equipo {
@@ -87,16 +69,10 @@
 }
 
 .equipo-logo {
-  width: 40px;
+  width: 60px;
   height: 40px;
-}
-
-.info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 0.9rem;
-  color: #555;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
   .schec {
@@ -104,22 +80,6 @@
   }
 
 @media (max-width: 768px) {
-  .juegos-table {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .info {
-    display: flex;
-    flex-direction: column;
-    margin-top: 6px;
-    align-items: center;
-  }
-
-  .schec {
-    padding-left: 0px;
-  }
 
 }
 
@@ -190,3 +150,24 @@
   }
 }
 
+
+.grid-row {
+  display: grid;
+  grid-template-columns: 
+    2fr     /* Local */
+    0.5fr   /* Vs */
+    2fr     /* Visitante */
+    1fr     /* Fecha */
+    0.8fr;  /* Hora */
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+  background-color: white;
+  color: #000;
+}
+
+.equipo-info {
+  display: flex;
+  flex-direction: column;
+}

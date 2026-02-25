@@ -1,9 +1,9 @@
 export const environment = {
   production: true,
-  supabaseUrl: 'https://pvbulapbudwrxukilivj.supabase.co',
-  functionAuthUrl: 'https://pvbulapbudwrxukilivj.supabase.co/functions/v1/auth',
-  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2YnVsYXBidWR3cnh1a2lsaXZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1ODU4MzcsImV4cCI6MjA3NDE2MTgzN30.ubiomG_a0XBqL8mnLu9ujyuXUSa1Zr7o_GBlMizmq0k',
-  functionCreateUserUrl: 'https://pvbulapbudwrxukilivj.supabase.co/functions/v1/create-user',
-  functionListUsersUrl:  'https://pvbulapbudwrxukilivj.supabase.co/functions/v1/list-users',
-  functionDeleteUserUrl: 'https://pvbulapbudwrxukilivj.supabase.co/functions/v1/delete-user'
+  supabaseUrl: 'https://odvlkohabsadnrnxohgu.supabase.co',
+  functionAuthUrl: 'https://odvlkohabsadnrnxohgu.supabase.co/functions/v1/auth',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9kdmxrb2hhYnNhZG5ybnhvaGd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTgwMjAsImV4cCI6MjA4NzUzNDAyMH0.Xn9Lt4fGbQCvpqHIk6MhYCE-xYyWwfbTcQX4_iqCDPo',
+  functionCreateUserUrl: 'https://odvlkohabsadnrnxohgu.supabase.co/functions/v1/create-user',
+  functionListUsersUrl:  'https://odvlkohabsadnrnxohgu.supabase.co/functions/v1/list-users',
+  functionDeleteUserUrl: 'https://odvlkohabsadnrnxohgu.supabase.co/functions/v1/delete-user'
 };

@@ -50,6 +50,14 @@ export class IngresarJuego implements OnInit {
 
   constructor(private service: Service, private router: Router) {}
 
+  fases = [
+  'Fase de Grupos',
+  'Eliminatoria 32',
+  'Octavos de Final',
+  'Cuartos de Final',
+  'Semifinal',
+  'Final',
+] as const;
 
   equipos: Equipo[] = [];
   loading = false;
@@ -58,6 +66,7 @@ export class IngresarJuego implements OnInit {
   form = this.fb.group({
     visitante: ['', Validators.required],
     local: ['', Validators.required],
+    fase: ['', Validators.required],
     fecha: [null as Date | null, Validators.required],
     hora:  ['', [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)]],
   }, { validators: [distintos] });
@@ -90,7 +99,7 @@ export class IngresarJuego implements OnInit {
     this.loading = true;
     this.errorMsg = null;
 
-    const { visitante, local, fecha, hora } = this.form.value;
+    const { visitante, local, fase, fecha, hora } = this.form.value;
 
     try {
       const fechaStr = this.formatYYYYMMDD(fecha as Date);
@@ -98,6 +107,7 @@ export class IngresarJuego implements OnInit {
       await firstValueFrom(this.svc.crearJuego({
         visitante: String(visitante),
         local: String(local),
+        fase: String(fase),
         fecha: fechaStr,
         hora: String(hora),
       }));

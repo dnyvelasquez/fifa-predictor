@@ -21,18 +21,19 @@ export interface Equipo {
   pg: number;
   pe: number;
   pp: number;
-  pw: number;
-  pd: number;
+  po: number;
   pc: number;
-  sb: number;
-  division: string;
+  ps: number;
+  pf: number;
+  grupo: string;
   logo: string;
   participante?: string;
 }
 
 export interface Juego {
   id: string;
-  semana: string;
+  fase: string;
+  semana: number;
   visitante: string;
   local: string;
   fecha: string;
@@ -87,7 +88,7 @@ export class Service {
           participantes.map(p =>
             this.getEquiposDe(p.nombre).pipe(
               map(equipos => {
-                const puntajeEquipos = equipos.reduce((acc, eq) => acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.pw ?? 0) * 20 + (eq.pd ?? 0) * 30 + (eq.pc ?? 0) * 40 + (eq.sb ?? 0) * 50, 0);
+                const puntajeEquipos = equipos.reduce((acc, eq) => acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
                 const acumulado = p.acumulado ?? 0;
                 return { ...p, equipos, puntajeEquipos, puntaje: puntajeEquipos + acumulado };
               })
@@ -174,15 +175,15 @@ export class Service {
           id: e.id,
           nombre: e.nombre,
           puntaje: e.puntaje,
-          division:e.division,
+          grupo:e.grupo,
           logo: e.logo,
           pg: e.pg,
           pe: e.pe,
           pp: e.pp,
-          pw: e.pw,
-          pd: e.pd,
+          po: e.po,
           pc: e.pc,
-          sb: e.sb,
+          ps: e.ps,
+          pf: e.pf,
           participante: (participantesPorEquipo[e.id]?.join(' / ')) ?? ''
         })) as Equipo[];
       })
@@ -193,7 +194,7 @@ export class Service {
     return from(
       this.supabase
         .from('asignacion')
-        .select('equipo_id, participante, equipos!inner(id,nombre,pg,pe,pp,pw,pd,pc,sb,division,logo)')
+        .select('equipo_id, participante, equipos!inner(id,nombre,pg,pe,pp,po,pc,ps,pf,grupo,logo)')
         .eq('participante', nombre)
     ).pipe(
       map(({ data, error }: any) => {
@@ -201,15 +202,15 @@ export class Service {
         return (data ?? []).map((row: any) => ({
           id: row.equipos.id,
           nombre: row.equipos.nombre,
-          division: row.equipos.division,
+          grupo: row.equipos.grupo,
           logo: row.equipos.logo,
           pg: row.equipos.pg,
           pe: row.equipos.pe,
           pp: row.equipos.pp,
-          pw: row.equipos.pw,
-          pd: row.equipos.pd,
+          po: row.equipos.po,
           pc: row.equipos.pc,
-          sb: row.equipos.sb,
+          ps: row.equipos.ps,
+          pf: row.equipos.pf,
           participante: row.participante,
         })) as Equipo[];
       })
@@ -414,7 +415,7 @@ export class Service {
     );
   }
 
-  crearJuego(input: { visitante: string; local: string; fecha: string; hora: string }) {
+  crearJuego(input: { visitante: string; local: string; fase: string; fecha: string; hora: string }) {
     return forkJoin({
       nextId: this.getNextJuegoId(),
       semanaId: this.getSemanaIdPorFecha(input.fecha),
@@ -429,6 +430,7 @@ export class Service {
                 semana: semanaId, 
                 visitante: input.visitante,
                 local: input.local,
+                fase: input.fase,
                 fecha: input.fecha,
                 hora: input.hora,
               },
@@ -623,8 +625,8 @@ export class Service {
     );
   }
 
-  assignEquipo(participanteNombre: string, division: string, equipoId: string | null) {
-    return this.getEquipoIdsPorDivision(division).pipe(
+  assignEquipo(participanteNombre: string, grupo: string, equipoId: string | null) {
+    return this.getEquipoIdsPorDivision(grupo).pipe(
       switchMap((idsMismaDivision) => {
         const delParticipante$ = idsMismaDivision.length
           ? from(
@@ -674,7 +676,7 @@ export class Service {
       );
   }
 
-  actualizarPuntaje(id: string, pg: number, pe: number, pp: number, pw: number, pd: number, pc: number, sb: number): Observable<any> {
+  actualizarPuntaje(id: string, pg: number, pe: number, pp: number, po: number, pc: number, ps: number, pf: number): Observable<any> {
     return from(
       this.supabase
         .from('equipos')
@@ -682,10 +684,10 @@ export class Service {
           pg: pg,
           pe: pe,
           pp: pp,
-          pw: pw,
-          pd: pd,
+          po: po,
           pc: pc,
-          sb: sb,
+          ps: ps,
+          pf: pf,
         })
         .eq('id', id)
     );
@@ -699,10 +701,10 @@ export class Service {
           pg: 0,
           pe: 0,
           pp: 0,
-          pw: 0,
-          pd: 0,
+          po: 0,
           pc: 0,
-          sb: 0,
+          ps: 0,
+          pf: 0,
         })
         .not('id', 'is', null)
     );
@@ -713,7 +715,7 @@ export class Service {
       asign: from(
         this.supabase
           .from('asignacion')
-          .select('participante, equipos!inner(pg, pe, pp, pw, pd, pc, sb)')
+          .select('participante, equipos!inner(pg, pe, pp, po, pd, pc, sb)')
       ),
       parts: from(
         this.supabase
@@ -728,7 +730,7 @@ export class Service {
         const totales: Record<string, number> = {};
         for (const row of asign.data ?? []) {
           const nombre = (row.participante || '').trim();
-          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.pw ?? 0) * 20 + (row.equipos?.pd ?? 0) * 30 + (row.equipos?.pc ?? 0) * 40 + (row.equipos?.pe ?? 0) * 50);
+          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pd ?? 0) * 30 + (row.equipos?.pc ?? 0) * 40 + (row.equipos?.pe ?? 0) * 50);
           if (!nombre || !pts) continue;
           totales[nombre] = (totales[nombre] ?? 0) + pts;
         }
@@ -750,9 +752,9 @@ export class Service {
     );
   }
 
-  private getEquipoIdsPorDivision(division: string) {
+  private getEquipoIdsPorDivision(grupo: string) {
     return from(
-      this.supabase.from('equipos').select('id').eq('division', division)
+      this.supabase.from('equipos').select('id').eq('grupo', grupo)
     ).pipe(
       map(({ data, error }: any) => {
         if (error) throw error;

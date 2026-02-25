@@ -1,7 +1,7 @@
 .tabla-puntajes-container {
   padding-top: 80px;
   padding-bottom: 20px;
-  background-color: #003366;
+  background-color: #003B73;
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -82,8 +82,10 @@
 }
 
 .equipo-logo {
-  width: 40px;
+  width: 60px;
   height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .equipo-puntaje {
@@ -119,16 +121,8 @@
   color: #003366; 
 }
 
-.chip-afc {
-  background-color: #d32f2f; 
-  color: #fff;
-  font-size: 0.7em;
-  padding: 4px;
-  border-radius: 8px;
-}
-
-.chip-nfc {
-  background-color: #1976d2; 
+.chip-grupo {
+  background-color: #003B73; 
   color: #fff;
   font-size: 0.7em;
   padding: 4px;

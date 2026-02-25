@@ -72,14 +72,14 @@ export class Asignacion implements OnInit {
   });
 
   divisiones = computed(() => {
-    const set = new Set(this.equipos().map(e => e.division));
+    const set = new Set(this.equipos().map(e => e.grupo));
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   });
 
   equiposPorDivision = computed(() => {
     const mapDiv: Record<string, Equipo[]> = {};
     for (const d of this.divisiones()) mapDiv[d] = [];
-    for (const e of this.equipos()) (mapDiv[e.division] ??= []).push(e);
+    for (const e of this.equipos()) (mapDiv[e.grupo] ??= []).push(e);
     for (const d of Object.keys(mapDiv)) mapDiv[d].sort((a, b) => a.nombre.localeCompare(b.nombre));
     return mapDiv;
   });
@@ -87,7 +87,7 @@ export class Asignacion implements OnInit {
   valorCelda(d: string, participanteNombre: string): string | null {
     const byId = this.equipoById();
     const row = this.asignaciones()
-      .find(a => a.participante === participanteNombre && byId[a.equipo_id]?.division === d);
+      .find(a => a.participante === participanteNombre && byId[a.equipo_id]?.grupo === d);
     return row ? row.equipo_id : null;
   }
 
@@ -101,16 +101,16 @@ export class Asignacion implements OnInit {
       .map(a => a.participante);
   }
 
-  onChangeCelda(division: string, participanteNombre: string, equipoId: string | null) {
+  onChangeCelda(grupo: string, participanteNombre: string, equipoId: string | null) {
     this.loading.set(true);
     this.errorMsg.set(null);
     this.okMsg.set(null);
 
-    this.svc.assignEquipo(participanteNombre, division, equipoId).subscribe({
+    this.svc.assignEquipo(participanteNombre, grupo, equipoId).subscribe({
       next: () => {
         const byId = this.equipoById();
         const prev = this.asignaciones().filter(
-          a => !(a.participante === participanteNombre && byId[a.equipo_id]?.division === division)
+          a => !(a.participante === participanteNombre && byId[a.equipo_id]?.grupo === grupo)
         );
 
         if (equipoId) {

@@ -1,68 +1,57 @@
 <div class="juegos-container">
   <mat-card class="juegos-card">
     <div class="header">
-      <img src="https://static.www.nfl.com/image/upload/v1554321393/league/nvfr7ogywskqrfaiu38m.svg" alt="NFL Logo" class="logo">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
       <mat-card-title class="juegos-title">
-        @if (currentWeekId === 22) {
-          SUPER BOWL
-        } @else {
-          Juegos de
-          @if (currentWeekId === 21) {
-            Finales de Conferencia
-          } @else {
-            @if (currentWeekId === 20) {
-              Ronda Divisional
-            } @else {
-              @if (currentWeekId === 19) {
-                Ronda de Comodines
-              } @else {
-                @if (currentWeekId !== null) {
-                  la Semana {{ currentWeekId }}
-                }
-              }
-            }
-          }
-        }
+          Juegos de la Semana {{ currentWeekId }}
       </mat-card-title>
-      <h1> 🏈</h1>
+      <h1> ⚽</h1>
       <mat-divider></mat-divider>
     </div>
 
     <div class="table-container">
+
       @for (j of juegos$ | async; track j.id) {
-        <div class="juegos-table">
-          <div class="equipos">
-            <div class="equipo-visitante">
-              <img [src]="j.logoVisitante" alt="{{ j.visitante }}" class="equipo-logo">
-              <div class="equipo">
-                <span>{{ j.visitante }}</span>
-                @if ((j.participanteVisitante || '').trim()) {
-                  <span class="participante">{{ j.participanteVisitante }}</span>
-                } @else {
-                  <span class="participante muted">No asignado</span>
-                }              
-              </div>
+        <div class="grid-row">
+
+          <div class="equipo equipo-local">
+
+            <img [src]="j.logoLocal" alt="{{ j.local }}" class="equipo-logo">
+
+            <div class="equipo-info">
+              <span class="nombre">{{ j.local }}</span>
+
+              @if ((j.participanteLocal || '').trim()) {
+                <span class="participante">{{ j.participanteLocal }}</span>
+              } @else {
+                <span class="participante">No asignado</span>
+              }
             </div>
-            <span class="vs">Vs</span>
-            <div class="equipo-local">
-              <div class="equipo">
-                <span>{{ j.local }}</span>
-                @if ((j.participanteLocal || '').trim()) {
-                  <span class="participante">{{ j.participanteLocal }}</span>
-                } @else {
-                  <span class="participante muted">No asignado</span>
-                }
-              </div>
-              <img [src]="j.logoLocal" alt="{{ j.local }}" class="equipo-logo">
+
+          </div>
+
+          <div class="vs">Vs</div>
+
+          <div class="equipo equipo-visitante">
+            <img [src]="j.logoVisitante" alt="{{ j.visitante }}" class="equipo-logo">
+
+            <div class="equipo-info">
+              <span class="nombre">{{ j.visitante }}</span>
+
+              @if ((j.participanteVisitante || '').trim()) {
+                <span class="participante">{{ j.participanteVisitante }}</span>
+              } @else {
+                <span class="participante muted">No asignado</span>
+              }
             </div>
           </div>
 
-          <div class="info">
-            <span class="schec">{{ j.fecha }}</span>
-            <span class="schec">{{ j.hora }}</span>
-          </div>
+          <span>{{ j.fecha }}</span>
+          <span>{{ j.hora }}</span>
+
         </div>
       }
+
     </div>    
 
   </mat-card>

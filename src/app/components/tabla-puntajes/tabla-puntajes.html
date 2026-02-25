@@ -1,9 +1,9 @@
 <div class="tabla-puntajes-container">
   <mat-card class="tabla-puntajes-card">
     <div class="header">
-      <img src="https://static.www.nfl.com/image/upload/v1554321393/league/nvfr7ogywskqrfaiu38m.svg" alt="NFL Logo" class="logo">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
       <mat-card-title class="tabla-puntajes-title">Tabla de puntajes</mat-card-title>
-      <h1> 🏈</h1>
+      <h1> ⚽</h1>
       <mat-divider></mat-divider>
     </div>
     <div class="table-container">
@@ -17,8 +17,8 @@
               @if ((p.acumulado) !== 0) {
                 <div class="equipo-item">
                   <img
-                    src="https://static.www.nfl.com/image/upload/v1554321393/league/nvfr7ogywskqrfaiu38m.svg"
-                    alt="NFL"
+                    src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75"
+                    alt="FIFA"
                     class="equipo-logo"
                   />
                   <span class="equipo-puntaje">{{ p.acumulado }}</span>
@@ -29,14 +29,7 @@
                   <div class="equipo-item">
                     <img [src]="eq.logo" [alt]="eq.nombre" class="equipo-logo" />
                     <span class="equipo-puntaje">{{ eq.pg * 10 + eq.pe * 5 }} puntos</span>
-                    <div
-                      [ngClass]="{
-                        'chip-afc': eq.division.startsWith('AFC'),
-                        'chip-nfc': eq.division.startsWith('NFC')
-                      }"
-                    >
-                      {{ eq.division }}
-                    </div>
+                    <span class="chip-grupo">GRUPO {{ eq.grupo }}</span>
                   </div>
               }
             </div>
