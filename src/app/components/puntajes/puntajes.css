@@ -52,19 +52,18 @@
 .equipos {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding-left: 8px;
   padding-right: 8px;
+  flex-wrap: wrap;
 }
 
 .equipo{
   display: flex;
   align-items: center;
   font-weight: bold;
-  justify-content: space-between;
   padding: 0px 8px;
-  gap: 20px;
 }
 
 .equipo-logo {
@@ -86,6 +85,7 @@
 }
 
 .info-equipo {
+  width: 80px;
   display: flex;
   flex-direction: column;
 }
