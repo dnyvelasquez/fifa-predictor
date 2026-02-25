@@ -22,10 +22,10 @@ jobs:
         run: npm install
 
       - name: Build Angular app
-        run: npx ng build nfl-predictor --configuration production --base-href="/nfl-predictor/"
+        run: npx ng build fifa-predictor --configuration production --base-href="/fifa-predictor/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/nfl-predictor/browser
+          publish_dir: ./dist/fifa-predictor/browser
