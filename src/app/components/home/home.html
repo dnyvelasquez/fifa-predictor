@@ -18,7 +18,7 @@
           [ngClass]="{'primer-lugar': i === 0, 'segundo-lugar': i === 1}">
           <div class="with-icon">
 
-          <span>{{p.nombre}}</span>
+          <span>{{i + 1}}. {{p.nombre}}</span>
 
           @if (i === 0) {
             <mat-icon class="icono-trofeo">emoji_events</mat-icon>
