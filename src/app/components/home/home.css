@@ -57,6 +57,11 @@
   font-weight: bold;
 }
 
+.otro-lugar {
+  background-color: #101414 !important;
+  font-weight: normal;
+}
+
 .icono-trofeo {
   color: darkorange;
   margin-left: 6px;
