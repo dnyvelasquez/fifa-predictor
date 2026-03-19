@@ -28,10 +28,10 @@ export class Home {
   displayedColumns: string[] = ['nombre', 'puntaje'];
   participantes$: Observable<Participante[]>;
 
+  
   constructor(private service: Service) {
 
     this.participantes$ = this.service.getParticipantesConPuntaje();
-
   }
 
 

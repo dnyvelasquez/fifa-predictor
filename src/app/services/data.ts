@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { supabase } from '../core/supabase.client';
 
+
 export interface Participante {
   id: string;
   numero: number;
@@ -12,6 +13,8 @@ export interface Participante {
   acumulado: number;
   puntaje?: number;
   equipos?: Equipo[];
+  max: boolean;
+  second: boolean;
 }
 
 export interface Equipo {
@@ -81,25 +84,45 @@ export class Service {
     );
   }
 
-  getParticipantesConPuntaje(): Observable<(Participante & {
-  })[]> {
-    return this.getParticipantes().pipe(
-      switchMap(participantes =>
-        forkJoin(
-          participantes.map(p =>
-            this.getEquiposDe(p.nombre).pipe(
-              map(equipos => {
-                const puntajeEquipos = equipos.reduce((acc, eq) => acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
-                const acumulado = p.acumulado ?? 0;
-                return { ...p, equipos, puntajeEquipos, puntaje: puntajeEquipos + acumulado };
-              })
-            )
+
+getParticipantesConPuntaje(): Observable<(Participante & {
+})[]> {
+  return this.getParticipantes().pipe(
+    switchMap(participantes =>
+      forkJoin(
+        participantes.map(p =>
+          this.getEquiposDe(p.nombre).pipe(
+            map(equipos => {
+              const puntajeEquipos = equipos.reduce((acc, eq) => 
+                acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + 
+                (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
+              const acumulado = p.acumulado ?? 0;
+              return { 
+                ...p, 
+                equipos, 
+                puntajeEquipos, 
+                puntaje: puntajeEquipos + acumulado 
+              };
+            })
           )
         )
-      ),
-      map(list => list.sort((a, b) => b.puntaje - a.puntaje))
-    );
-  }
+      )
+    ),
+    map(list => {
+      const participantesOrdenados = list.sort((a, b) => b.puntaje - a.puntaje);
+      
+      const puntajeMaximo = participantesOrdenados.length > 0 
+        ? Math.max(...participantesOrdenados.map(p => p.puntaje))
+        : 0;
+      
+      return participantesOrdenados.map(p => ({
+        ...p,
+        max: p.puntaje === puntajeMaximo && p.puntaje > 0
+      }));
+    })
+  );
+}
+
 
   createParticipante(nombre: string, numero: number) {
     return from(
