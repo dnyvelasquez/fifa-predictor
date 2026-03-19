@@ -27,7 +27,7 @@
         <div class="matrix-wrapper" [class.loading]="loading()">
 
             <div class="grid" 
-                [style.gridTemplateColumns]="'100px ' + '1fr '.repeat(participantes().length)">
+                [style.gridTemplateColumns]="'80px ' + '1fr '.repeat(participantes().length)">
                 <div class="cell head sticky">&nbsp;</div>
                 @for (p of participantes(); track p.id) {
                     <div class="cell head sticky">{{ p.numero }} - {{ p.nombre }}</div>
