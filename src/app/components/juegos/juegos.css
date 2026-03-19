@@ -148,6 +148,9 @@
   .fab-left, .fab-right {
     transform: translateY(-50%) scale(0.9);
   }
+  .scheduled {
+    flex-direction: column;        
+  }
 }
 
 
@@ -171,3 +174,8 @@
   display: flex;
   flex-direction: column;
 }
+
+  .scheduled {
+    display: flex;
+    gap: 8px;
+  }
