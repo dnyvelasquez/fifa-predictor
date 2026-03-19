@@ -157,14 +157,13 @@
 .grid-row {
   display: grid;
   grid-template-columns: 
-    2fr     /* Local */
+    3fr     /* Local */
     0.5fr   /* Vs */
     2fr     /* Visitante */
-    1fr     /* Fecha */
-    0.8fr;  /* Hora */
+    3fr;    /* scheduled */
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
+  padding: 12px;
   border-bottom: 1px solid #eee;
   background-color: white;
   color: #000;
