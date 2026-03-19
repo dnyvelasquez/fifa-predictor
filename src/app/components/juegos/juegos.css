@@ -159,7 +159,7 @@
   grid-template-columns: 
     3fr     /* Local */
     0.5fr   /* Vs */
-    2fr     /* Visitante */
+    3fr     /* Visitante */
     3fr;    /* scheduled */
   align-items: center;
   gap: 12px;
