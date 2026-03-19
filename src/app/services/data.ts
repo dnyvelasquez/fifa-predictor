@@ -85,43 +85,56 @@ export class Service {
   }
 
 
-getParticipantesConPuntaje(): Observable<(Participante & {
-})[]> {
-  return this.getParticipantes().pipe(
-    switchMap(participantes =>
-      forkJoin(
-        participantes.map(p =>
-          this.getEquiposDe(p.nombre).pipe(
-            map(equipos => {
-              const puntajeEquipos = equipos.reduce((acc, eq) => 
-                acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + 
-                (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
-              const acumulado = p.acumulado ?? 0;
-              return { 
-                ...p, 
-                equipos, 
-                puntajeEquipos, 
-                puntaje: puntajeEquipos + acumulado 
-              };
-            })
+  getParticipantesConPuntaje(): Observable<(Participante & {
+  })[]> {
+    return this.getParticipantes().pipe(
+      switchMap(participantes =>
+        forkJoin(
+          participantes.map(p =>
+            this.getEquiposDe(p.nombre).pipe(
+              map(equipos => {
+                const puntajeEquipos = equipos.reduce((acc, eq) => 
+                  acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + 
+                  (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
+                const acumulado = p.acumulado ?? 0;
+                return { 
+                  ...p, 
+                  equipos, 
+                  puntajeEquipos, 
+                  puntaje: puntajeEquipos + acumulado 
+                };
+              })
+            )
           )
         )
-      )
-    ),
-    map(list => {
-      const participantesOrdenados = list.sort((a, b) => b.puntaje - a.puntaje);
-      
-      const puntajeMaximo = participantesOrdenados.length > 0 
-        ? Math.max(...participantesOrdenados.map(p => p.puntaje))
-        : 0;
-      
-      return participantesOrdenados.map(p => ({
-        ...p,
-        max: p.puntaje === puntajeMaximo && p.puntaje > 0
-      }));
-    })
-  );
-}
+      ),
+      map(list => {
+        // Ordenar por puntaje descendente
+        const participantesOrdenados = list.sort((a, b) => b.puntaje - a.puntaje);
+        
+        // Encontrar puntajes únicos (excluyendo 0)
+        const puntajesUnicos = [...new Set(participantesOrdenados.map(p => p.puntaje))]
+          .filter(p => p > 0)
+          .sort((a, b) => b - a);
+        
+        // El primer lugar es el puntaje más alto
+        const primerPuntaje = puntajesUnicos.length > 0 ? puntajesUnicos[0] : 0;
+        
+        // Verificar si hay empate en el primer lugar
+        const hayEmpatePrimerLugar = participantesOrdenados.filter(p => p.puntaje === primerPuntaje).length > 1;
+        
+        // El segundo lugar solo existe si NO hay empate en primer lugar y hay un segundo puntaje
+        const segundoPuntaje = !hayEmpatePrimerLugar && puntajesUnicos.length > 1 ? puntajesUnicos[1] : 0;
+        
+        // Añadir las propiedades 'max' y 'second' a cada participante
+        return participantesOrdenados.map(p => ({
+          ...p,
+          max: p.puntaje === primerPuntaje && p.puntaje > 0,
+          second: !hayEmpatePrimerLugar && p.puntaje === segundoPuntaje && p.puntaje > 0
+        }));
+      })
+    );
+  }
 
 
   createParticipante(nombre: string, numero: number) {
