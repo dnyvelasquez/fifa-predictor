@@ -1,11 +1,7 @@
 <mat-toolbar color="primary" class="header-toolbar">
   <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
   <span class="title">FIFA Predictor ⚽</span>
-
-  <!-- Espaciador -->
   <span class="spacer"></span>
-
-  <!-- Menú en desktop -->
   <nav class="menu-desktop">
     <button class="menu-button" mat-button routerLink="/">
       <mat-icon class="icon">home</mat-icon> Home
@@ -26,12 +22,9 @@
       <mat-icon class="icon">admin_panel_settings</mat-icon> Admin
     </button>
   </nav>
-
-  <!-- Menú hamburguesa en móvil -->
   <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-mobile">
     <mat-icon>menu</mat-icon>
   </button>
-
 <mat-menu #menu="matMenu">
   <button class="mobile-2" mat-menu-item routerLink="/">
     <mat-icon>home</mat-icon>
@@ -42,7 +35,7 @@
     <span>Tabla de puntajes</span>
   </button>
   <button class="mobile-2" mat-menu-item routerLink="/juegos">
-    <mat-icon>sports_football</mat-icon>
+    <mat-icon>sports_soccer</mat-icon>
     <span>Juegos de la semana</span>
   </button>
   <button mat-menu-item routerLink="/equipos">
