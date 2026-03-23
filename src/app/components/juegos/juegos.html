@@ -8,68 +8,77 @@
       <h1> ⚽</h1>
       <mat-divider></mat-divider>
     </div>
-
     <div class="table-container">
-
-      @for (j of juegos$ | async; track j.id) {
-        <div class="grid-row">
-
-          <div class="equipo equipo-local">
-
-            <img [src]="j.logoLocal" alt="{{ j.local }}" class="equipo-logo">
-
-            <div class="equipo-info">
-              <span class="nombre">{{ j.local }}</span>
-
-              @if ((j.participanteLocal || '').trim()) {
-                <span class="participante">{{ j.participanteLocal }}</span>
-              } @else {
-                <span class="participante">No asignado</span>
+      @for (grupo of (juegosAgrupados$ | async); track grupo.fecha) {
+        <div class="fecha-group">
+          <div class="fecha-header">
+            <div class="info">
+              <mat-icon>calendar_today</mat-icon>
+              <h3>{{ grupo.fecha }}</h3>
+            </div>
+            <div class="info">
+              <mat-icon>sports</mat-icon>
+              <div>
+            </div>
+              @for (fase of grupo.fases; track fase; let last = $last) {
+                <span>{{ fase }}</span>
               }
             </div>
-
+          </div>          
+          <div class="subtable">
+            @for (j of grupo.juegos; track j.id) {
+              <div class="grid-row">
+                <div class="equipo equipo-local">
+                  <img [src]="j.logoLocal" alt="{{ j.local }}" class="equipo-logo">
+                  <div class="equipo-info">
+                    <span class="nombre">{{ j.local }}</span>
+                    @if ((j.participanteLocal || '').trim()) {
+                      <span class="participante">{{ j.participanteLocal }}</span>
+                    } @else {
+                      <span class="participante">No asignado</span>
+                    }
+                  </div>
+                </div>
+                <div class="vs">Vs</div>
+                <div class="equipo equipo-visitante">
+                  <img [src]="j.logoVisitante" alt="{{ j.visitante }}" class="equipo-logo">
+                  <div class="equipo-info">
+                    <span class="nombre">{{ j.visitante }}</span>
+                    @if ((j.participanteVisitante || '').trim()) {
+                      <span class="participante">{{ j.participanteVisitante }}</span>
+                    } @else {
+                      <span class="participante muted">No asignado</span>
+                    }
+                  </div>
+                </div>
+                <div class="scheduled">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ j.hora }}</span>
+                </div>
+              </div>
+            }
           </div>
+        </div>
 
-          <div class="vs">Vs</div>
 
-          <div class="equipo equipo-visitante">
-            <img [src]="j.logoVisitante" alt="{{ j.visitante }}" class="equipo-logo">
-
-            <div class="equipo-info">
-              <span class="nombre">{{ j.visitante }}</span>
-
-              @if ((j.participanteVisitante || '').trim()) {
-                <span class="participante">{{ j.participanteVisitante }}</span>
-              } @else {
-                <span class="participante muted">No asignado</span>
-              }
-            </div>
-          </div>
-          <div class="scheduled">
-            <span>{{ j.fecha }}</span>
-            <span>{{ j.hora }}</span>
-          </div>
-
+      } @empty {
+        <div class="no-juegos">
+          <mat-icon>sports_soccer</mat-icon>
+          <p>No hay juegos programados para esta semana</p>
         </div>
       }
-
     </div>    
-
   </mat-card>
-
   <button class="fab-left" mat-fab (click)="prevWeek()"
     [disabled]="currentWeekId === null || minWeek === null || currentWeekId <= minWeek">
     <mat-icon>chevron_left</mat-icon>
   </button>
-
   <button class="fab-right" mat-fab (click)="nextWeek()"
     [disabled]="currentWeekId === null || maxWeek === null || currentWeekId >= maxWeek">
     <mat-icon>chevron_right</mat-icon>
   </button>
-
-
-
-
-
 </div>
+
+
+
 
