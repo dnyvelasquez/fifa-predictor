@@ -22,7 +22,7 @@
 .container {
   overflow-x: auto;
   background-color: white;
-  border-radius: 2%;
+  border-radius: 16px;
   color: black;
 }
 
@@ -35,8 +35,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 15px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 li {
