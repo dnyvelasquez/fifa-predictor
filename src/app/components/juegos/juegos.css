@@ -63,9 +63,13 @@
 }
 
 .vs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   font-weight: bold;
   font-size: 1.1rem;
   color: #d32f2f;
+  min-width: 36px;
 }
 
 .equipo-logo {
@@ -155,7 +159,7 @@
   display: grid;
   grid-template-columns: 
     3fr     /* Local */
-    0.5fr   /* Vs */
+    1fr   /* Vs */
     3fr     /* Visitante */
     3fr;    /* scheduled */
   align-items: center;

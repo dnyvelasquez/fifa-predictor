@@ -43,6 +43,8 @@ export interface Juego {
   fecha: string;
   hora: string;
   actual: boolean;
+  lscore: number;
+  vscore: number;
   logoVisitante?: string;
   logoLocal?: string;
   participanteVisitante? : string;

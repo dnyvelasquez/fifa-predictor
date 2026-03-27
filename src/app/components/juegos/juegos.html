@@ -39,7 +39,12 @@
                     }
                   </div>
                 </div>
-                <div class="vs">Vs</div>
+                <div class="vs">
+                  <span>Vs</span>
+                  @if ( j.lscore || j.vscore !== null) {
+                    <span>{{ j.lscore }} - {{ j.vscore }}</span>
+                  }                  
+                </div>
                 <div class="equipo equipo-visitante">
                   <img [src]="j.logoVisitante" alt="{{ j.visitante }}" class="equipo-logo">
                   <div class="equipo-info">

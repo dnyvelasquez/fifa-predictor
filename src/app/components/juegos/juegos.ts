@@ -10,7 +10,6 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { map } from 'rxjs/operators';
 
-// Definir la interfaz para el grupo
 interface GrupoJuegos {
   fecha: string;
   fases: string[];
@@ -35,7 +34,7 @@ interface GrupoJuegos {
 
 export class Juegos  {
   juegos$!: Observable<Juego[]>;
-  juegosAgrupados$!: Observable<GrupoJuegos[]>; // Cambiar el tipo
+  juegosAgrupados$!: Observable<GrupoJuegos[]>;
   currentWeekId: number | null = null;
   minWeek: number | null = null;
   maxWeek: number | null = null;
@@ -62,9 +61,7 @@ export class Juegos  {
   private setupAgrupacion() {
     this.juegosAgrupados$ = this.juegos$.pipe(
       map(juegos => {
-        // Agrupar juegos por fecha
-        const gruposMap = new Map<string, {juegos: Juego[], fases: Set<string>}>();
-        
+        const gruposMap = new Map<string, {juegos: Juego[], fases: Set<string>}>();        
         juegos.forEach(juego => {
           const fecha = juego.fecha;
           if (!gruposMap.has(fecha)) {
@@ -72,17 +69,14 @@ export class Juegos  {
           }
           const grupo = gruposMap.get(fecha)!;
           grupo.juegos.push(juego);
-          // Agregar la fase al Set si existe
           if (juego.fase && juego.fase.trim()) {
             grupo.fases.add(juego.fase);
           }
-        });
-        
-        // Convertir a array y ordenar por fecha
+        });        
         return Array.from(gruposMap.entries())
           .map(([fecha, {juegos, fases}]) => ({
             fecha,
-            fases: Array.from(fases), // Convertir Set a Array
+            fases: Array.from(fases),
             juegos: juegos.sort((a, b) => a.hora.localeCompare(b.hora))
           }))
           .sort((a, b) => a.fecha.localeCompare(b.fecha));
