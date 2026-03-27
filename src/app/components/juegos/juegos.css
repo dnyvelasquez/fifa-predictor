@@ -75,14 +75,6 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
-  .schec {
-    padding-left: 20px;
-  }
-
-@media (max-width: 768px) {
-
-}
-
 .fab-left,
 .fab-right {
   position: fixed;
@@ -181,13 +173,11 @@
 
   .scheduled {
     display: flex;
+    justify-content: center;
     gap: 8px;
   }
 
-
-
-
-  .fecha-group {
+.fecha-group {
   margin-bottom: 24px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
