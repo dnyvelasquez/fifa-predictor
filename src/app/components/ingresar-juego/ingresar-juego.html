@@ -19,6 +19,195 @@
     </div>
       
     <div class="table-container">
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate class="pg-form">
+        <div class="field-container">
+          <mat-form-field appearance="fill">
+            <mat-label>Equipo local</mat-label>
+            <mat-select formControlName="local">
+                @for (e of equipos; track e.id) {
+                <mat-option [value]="e.nombre">{{ e.nombre }}</mat-option>
+                }
+            </mat-select>
+            @if (f.local.touched && f.local.hasError('required')) {
+                <mat-error>Selecciona el equipo local</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Equipo visitante</mat-label>
+            <mat-select formControlName="visitante">
+                @for (e of equipos; track e.id) {
+                <mat-option [value]="e.nombre">{{ e.nombre }}</mat-option>
+                }
+            </mat-select>
+            @if (f.visitante.touched && f.visitante.hasError('required')) {
+                <mat-error>Selecciona el equipo visitante</mat-error>
+            }
+            @if (form.hasError('mismosEquipos')) {
+                <mat-error>Visitante y Local no pueden ser el mismo equipo</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Fase</mat-label>
+            <mat-select formControlName="fase">
+              @for (f of fases; track f) {
+                <mat-option [value]="f">{{ f }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.fase.touched && form.controls.fase.hasError('required')) {
+              <mat-error>La fase es requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Fecha (AAAA/MM/DD)</mat-label>
+            <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="fecha"
+                placeholder="2025/10/12"
+                (dateChange)="onFechaPicked($event)" 
+                (dateInput)="onFechaPicked($event)" 
+                (input)="onFechaTyped($event)"
+                autocomplete="off" />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker startView="multi-year"></mat-datepicker>
+            @if (f.fecha.touched && f.fecha.hasError('required')) {
+                <mat-error>La fecha es requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Hora (HH:mm 24h)</mat-label>
+            <input matInput placeholder="20:15" formControlName="hora" />
+            @if (f.hora.touched && f.hora.hasError('required')) { <mat-error>La hora es requerida</mat-error> }
+            @if (f.hora.touched && f.hora.hasError('pattern')) { <mat-error>Formato válido: 00:00 a 23:59</mat-error> }
+          </mat-form-field>
+        </div>
+
+        <div class="pg-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading">
+              {{ loading ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+
+        @if (errorMsg) {
+          <div class="error">{{ errorMsg }}</div>
+        }
+      </form>
+    </div>
+
+    <!-- Tabla de juegos ingresados -->
+    @if (juegos.length > 0) {
+      <div class="juegos-container">
+        <h2>Juegos Ingresados</h2>
+        <div class="table-wrapper">
+          <table mat-table [dataSource]="juegos" class="mat-elevation-z8">
+            <!-- Columna Local -->
+            <ng-container matColumnDef="local">
+              <th mat-header-cell *matHeaderCellDef> Local </th>
+              <td mat-cell *matCellDef="let juego"> {{juego.local}} </td>
+            </ng-container>
+
+            <!-- Columna Visitante -->
+            <ng-container matColumnDef="visitante">
+              <th mat-header-cell *matHeaderCellDef> Visitante </th>
+              <td mat-cell *matCellDef="let juego"> {{juego.visitante}} </td>
+            </ng-container>
+
+            <!-- Columna Fase -->
+            <ng-container matColumnDef="fase">
+              <th mat-header-cell *matHeaderCellDef> Fase </th>
+              <td mat-cell *matCellDef="let juego"> {{juego.fase}} </td>
+            </ng-container>
+
+            <!-- Columna Fecha -->
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef> Fecha </th>
+              <td mat-cell *matCellDef="let juego"> {{juego.fecha}} </td>
+            </ng-container>
+
+            <!-- Columna Hora -->
+            <ng-container matColumnDef="hora">
+              <th mat-header-cell *matHeaderCellDef> Hora </th>
+              <td mat-cell *matCellDef="let juego"> {{juego.hora}} </td>
+            </ng-container>
+
+            <!-- Columna Score Local -->
+            <ng-container matColumnDef="lscore">
+              <th mat-header-cell *matHeaderCellDef> Score Local </th>
+              <td mat-cell *matCellDef="let juego">
+                <mat-form-field appearance="fill" class="score-field">
+                  <input matInput type="number" [value]="juego.lscore" 
+                         (change)="actualizarScore(juego, $event.target.value, juego.vscore)"
+                         placeholder="0" min="0">
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <!-- Columna Score Visitante -->
+            <ng-container matColumnDef="vscore">
+              <th mat-header-cell *matHeaderCellDef> Score Visitante </th>
+              <td mat-cell *matCellDef="let juego">
+                <mat-form-field appearance="fill" class="score-field">
+                  <input matInput type="number" [value]="juego.vscore" 
+                         (change)="actualizarScore(juego, juego.lscore, $event.target.value)"
+                         placeholder="0" min="0">
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <!-- Columna Acciones -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef> Acciones </th>
+              <td mat-cell *matCellDef="let juego">
+                <button mat-icon-button color="warn" (click)="eliminarJuego(juego.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </div>
+    } @else {
+      <div class="no-juegos">
+        <p>No hay juegos ingresados aún.</p>
+      </div>
+    }
+  </mat-card>
+</div>
+
+
+
+
+
+
+
+<!-- <div class="ingresar-juego-container">
+  <mat-card class="ingresar-juego-card">
+    <div class="header">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
+      <mat-card-title class="ingresar-juego-title">Ingresar Juego</mat-card-title>
+      <h1> ⚽</h1>
+      <mat-divider></mat-divider>
+    </div>
+
+    <div class="button-container">
+      <button class="left" mat-menu-item routerLink="/admin">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Volver</span>
+      </button>
+      <button class="right" mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+      
+    <div class="table-container">
 
       <form [formGroup]="form" (ngSubmit)="guardar()" novalidate class="pg-form">
 
@@ -109,4 +298,4 @@
 </div>
 
 
-
+ -->
