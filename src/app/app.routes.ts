@@ -13,6 +13,7 @@ import { IngresarJuego } from './components/ingresar-juego/ingresar-juego';
 import { BorrarUsuario } from './components/borrar-usuario/borrar-usuario';
 import { Participantes } from './components/participantes/participantes';
 import { Asignacion } from './components/asignacion/asignacion';
+import { Clasificacion } from './components/clasificacion/clasificacion';
 import { authGuard } from '../app/auth-guard';
 import { guestGuard } from './guest-guard';
 
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'ingresar-juego', component: IngresarJuego, canActivate: [authGuard] },
   { path: 'participantes', component: Participantes, canActivate: [authGuard] },
   { path: 'asignacion', component: Asignacion, canActivate: [authGuard] },
+  { path: 'clasificacion', component: Clasificacion, canActivate: [authGuard] },
 
   { path: '**', redirectTo: '' }
 
