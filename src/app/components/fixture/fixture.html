@@ -1,19 +1,4 @@
-<div class="fixture-wrapper">
-  <svg class="lineas-svg" id="lineasFixture"></svg>
-  
-
-
-
-
-
 <div class="fixture-container">
-
-    
-
-
-
-
-
     <div class="fase-container">
         <strong>Fase de Grupos</strong>
         @for (grupo of (equiposAgrupados$ | async); track grupo.nombre) {
@@ -24,7 +9,7 @@
                         <h2>Grupo {{ grupo.nombre }}</h2>
                     </div>
                 </div>
-          
+        
                 @for (equipo of grupo.equipos; track equipo.id) {
                     <div class="equipo-row">
                         <div class="equipo-info">
@@ -43,11 +28,8 @@
             </div>
         }
     </div>
-    
     <div class="fase-container">
-
         <strong>Eliminatoria 32</strong>
-
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- 1E -->
@@ -75,7 +57,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1I -->
                 <div class="equipo-row">
@@ -102,7 +83,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 2A -->
                 <div class="equipo-row">
@@ -129,7 +109,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1F -->
                 <div class="equipo-row">
@@ -183,7 +162,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1H -->
                 <div class="equipo-row">
@@ -210,7 +188,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1D -->
                 <div class="equipo-row">
@@ -237,7 +214,6 @@
                     </div>
                 </div>
             </div> 
-
             <div class="grupo-card">
                 <!-- 1G -->
                 <div class="equipo-row">
@@ -264,7 +240,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1C -->
                 <div class="equipo-row">
@@ -291,7 +266,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 2E -->
                 <div class="equipo-row">
@@ -318,7 +292,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1A -->
                 <div class="equipo-row">
@@ -345,7 +318,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1L -->
                 <div class="equipo-row">
@@ -372,7 +344,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1J -->
                 <div class="equipo-row">
@@ -399,7 +370,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 2D -->
                 <div class="equipo-row">
@@ -426,7 +396,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1B -->
                 <div class="equipo-row">
@@ -453,7 +422,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="grupo-card">
                 <!-- 1K -->
                 <div class="equipo-row">
@@ -480,20 +448,15 @@
                     </div>
                 </div>
             </div>
-
         } @else {
             <div class="no-equipos">
                 <mat-icon>sports_soccer</mat-icon>
                 <p>No hay equipos disponibles</p>
             </div>
         }
-        
     </div>
-
     <div class="fase-container">
-
         <strong>Octavos de Final</strong>
-
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- Equipo 1 -->
@@ -703,23 +666,15 @@
                     </div>
                 </div>
             </div>
-
-
-
-
         } @else {
             <div class="no-equipos">
                 <mat-icon>sports_soccer</mat-icon>
                 <p>No hay equipos disponibles</p>
             </div>
         }
-        
     </div>
-
     <div class="fase-container">
-
         <strong>Cuartos de Final</strong>
-
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- Equipo 1 -->
@@ -825,20 +780,15 @@
                     </div>
                 </div>
             </div>
-
         } @else {
             <div class="no-equipos">
                 <mat-icon>sports_soccer</mat-icon>
                 <p>No hay equipos disponibles</p>
             </div>
         }
-        
     </div>
-
     <div class="fase-container">
-
         <strong>Semifinal</strong>
-
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- Equipo 1 -->
@@ -892,22 +842,15 @@
                     </div>
                 </div>
             </div>
-
-
-
         } @else {
             <div class="no-equipos">
                 <mat-icon>sports_soccer</mat-icon>
                 <p>No hay equipos disponibles</p>
             </div>
         }
-        
     </div>
-
     <div class="fase-container">
-
         <H2>GRAN FINAL</H2>
-
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- Equipo 1 -->
@@ -935,24 +878,12 @@
                     </div>
                 </div>
             </div>
-
         } @else {
             <div class="no-equipos">
                 <mat-icon>sports_soccer</mat-icon>
                 <p>No hay equipos disponibles</p>
             </div>
         }
-        
     </div>
-
-
-
-
-     </div>
-
-
-
-
-
-
 </div>
+

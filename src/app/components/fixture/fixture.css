@@ -107,73 +107,9 @@
   color: #999;
 }
 
-/* Wrapper para superponer SVG sobre las cards */
 .fixture-wrapper {
   position: relative;
   background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
   min-height: 100vh;
   overflow-x: auto;
 }
-
-.lineas-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 20;
-}
-
-.fixture-container {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: left;
-  align-items: flex-start;
-  gap: 24px;
-  padding-bottom: 40px;
-  background: transparent;
-}
-
-/* Cards con posición relativa para obtener sus coordenadas */
-.grupo-card {
-  position: relative;
-}
-
-/* Wrapper para superponer SVG sobre las cards */
-.fixture-wrapper {
-  position: relative;
-  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
-  min-height: 100vh;
-  overflow-x: auto;
-}
-
-.lineas-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 20;
-}
-
-.fixture-container {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: left;
-  align-items: flex-start;
-  gap: 24px;
-  padding-bottom: 40px;
-  background: transparent;
-}
-
-/* Cards con posición relativa para obtener sus coordenadas */
-.grupo-card {
-  position: relative;
-  transition: transform 0.3s ease;
-}
-
-
