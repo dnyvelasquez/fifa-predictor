@@ -25,34 +25,32 @@
         @if (okMsg())    { <div class="ok">{{ okMsg() }}</div> }
 
         <div class="matrix-wrapper" [class.loading]="loading()">
-
             <div class="grid" 
-                [style.gridTemplateColumns]="'80px ' + '1fr '.repeat(participantes().length)">
+                [style.gridTemplateColumns]="'100px ' + '1fr '.repeat(participantes().length)">
                 <div class="cell head sticky">&nbsp;</div>
                 @for (p of participantes(); track p.id) {
                     <div class="cell head sticky">{{ p.numero }} - {{ p.nombre }}</div>
                 }
                 
-                @for (d of divisiones(); track d) {
-                    <div class="cell head sticky-left">Grupo {{ d }}</div>
+                @for (fila of filas; track fila.id) {
+                    <div class="cell head sticky-left">{{ fila.label }}</div>
                     @for (p of participantes(); track p.id) {
                         <div class="cell">
                             <mat-select
-                                [value]="valorCelda(d, p.nombre)"
-                                (selectionChange)="onChangeCelda(d, p.nombre, $event.value)"
+                                [value]="getEquipoAsignado(p.nombre, fila.id)"
+                                (selectionChange)="onChangeCelda(fila.id, p.nombre, $event.value)"
                                 disableOptionCentering
                                 panelClass="asig-panel"
                             >
-                            <mat-option [value]="null">— Sin asignación —</mat-option>
-                            @for (eq of opcionesPara(d); track eq.id) {                                
-                                <mat-option [value]="eq.id">{{ eq.nombre }}</mat-option>
-                            }
+                                <mat-option [value]="null">— Sin asignación —</mat-option>
+                                @for (eq of equiposOrdenados(); track eq.id) {                                
+                                    <mat-option [value]="eq.id">{{ eq.nombre }}</mat-option>
+                                }
                             </mat-select>
                         </div>
                     }
                 }
             </div>
         </div>
-
     </mat-card>
 </div>

@@ -29,7 +29,12 @@ export interface Equipo {
   pc: number;
   ps: number;
   pf: number;
+  e32: string;
   grupo: string;
+  of: string;
+  cf: string;
+  sf: string;
+  gf: string;
   logo: string;
   participante?: string;
 }
@@ -224,6 +229,11 @@ export class Service {
           pc: e.pc,
           ps: e.ps,
           pf: e.pf,
+          e32: e.e32,
+          of: e.of,
+          cf: e.cf,
+          sf: e.sf,
+          gf: e.gf,
           participante: (participantesPorEquipo[e.id]?.join(' / ')) ?? ''
         })) as Equipo[];
       })
@@ -234,7 +244,7 @@ export class Service {
     return from(
       this.supabase
         .from('asignacion')
-        .select('equipo_id, participante, equipos!inner(id,nombre,pg,pe,pp,p32,po,pc,ps,pf,grupo,logo)')
+        .select('equipo_id, participante, equipos!inner(id,nombre,pg,pe,pp,p32,po,pc,ps,pf,e32,grupo,of,cf,sf,gf,logo)')
         .eq('participante', nombre)
     ).pipe(
       map(({ data, error }: any) => {
@@ -252,6 +262,11 @@ export class Service {
           pc: row.equipos.pc,
           ps: row.equipos.ps,
           pf: row.equipos.pf,
+          e32: row.equipos.e32,
+          of: row.equipos.of,
+          cf: row.equipos.cf,
+          sf: row.equipos.sf,
+          gf: row.equipos.gf,
           participante: row.participante,
         })) as Equipo[];
       })
@@ -819,14 +834,7 @@ export class Service {
       })
     );
   }
-
-
-
-
-
-  // Agregar después del método crearJuego
-
-  // Obtener todos los juegos (sin filtro de semana)
+ 
   getAllJuegos(): Observable<Juego[]> {
     return forkJoin({
       juegos: from(
@@ -881,7 +889,6 @@ export class Service {
     );
   }
 
-  // Método para actualizar un juego (incluyendo scores)
   actualizarJuego(juego: Juego): Observable<Juego> {
     const { id, lscore, vscore, ...resto } = juego;
     
@@ -903,7 +910,6 @@ export class Service {
     );
   }
 
-  // Método para eliminar un juego
   eliminarJuego(id: string): Observable<void> {
     return from(
       this.supabase
@@ -918,7 +924,6 @@ export class Service {
     );
   }
 
-  // Método para actualizar solo los scores de un juego
   actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
     return from(
       this.supabase
@@ -938,9 +943,35 @@ export class Service {
     );
   }  
 
+// Agregar estos métodos al service existente
 
+deleteParticipanteAsignaciones(participanteNombre: string): Observable<any> {
+  return from(
+    this.supabase
+      .from('asignacion')
+      .delete()
+      .eq('participante', participanteNombre)
+  ).pipe(
+    map(({ error }: any) => {
+      if (error) throw error;
+      return { ok: true };
+    })
+  );
+}
 
-
+assignEquipoSimple(participanteNombre: string, equipoId: string): Observable<any> {
+  return from(
+    this.supabase
+      .from('asignacion')
+      .insert([{ equipo_id: equipoId, participante: participanteNombre }])
+      .select()
+  ).pipe(
+    map(({ error }: any) => {
+      if (error && error.code !== '23505') throw error;
+      return { ok: true };
+    })
+  );
+}
 
 }
 

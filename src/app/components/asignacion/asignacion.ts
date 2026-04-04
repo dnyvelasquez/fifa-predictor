@@ -40,6 +40,12 @@ export class Asignacion implements OnInit {
   equipos       = signal<Equipo[]>([]);
   asignaciones  = signal<AsignacionRow[]>([]);
 
+  // Definimos las dos filas fijas
+  filas = [
+    { id: 'equipo1', label: 'Equipo 1' },
+    { id: 'equipo2', label: 'Equipo 2' }
+  ];
+
   ngOnInit(): void { this.cargarTodo(); }
 
   private cargarTodo() {
@@ -65,63 +71,94 @@ export class Asignacion implements OnInit {
     });
   }
 
-  private equipoById = computed<Record<string, Equipo>>(() => {
-    const map: Record<string, Equipo> = {};
-    for (const e of this.equipos()) map[e.id] = e;
-    return map;
+  // Todos los equipos ordenados alfabéticamente
+  equiposOrdenados = computed(() => {
+    return [...this.equipos()].sort((a, b) => a.nombre.localeCompare(b.nombre));
   });
 
-  divisiones = computed(() => {
-    const set = new Set(this.equipos().map(e => e.grupo));
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  });
-
-  equiposPorDivision = computed(() => {
-    const mapDiv: Record<string, Equipo[]> = {};
-    for (const d of this.divisiones()) mapDiv[d] = [];
-    for (const e of this.equipos()) (mapDiv[e.grupo] ??= []).push(e);
-    for (const d of Object.keys(mapDiv)) mapDiv[d].sort((a, b) => a.nombre.localeCompare(b.nombre));
-    return mapDiv;
-  });
-
-  valorCelda(d: string, participanteNombre: string): string | null {
-    const byId = this.equipoById();
-    const row = this.asignaciones()
-      .find(a => a.participante === participanteNombre && byId[a.equipo_id]?.grupo === d);
-    return row ? row.equipo_id : null;
+  // Obtener el equipo asignado a un participante para una fila específica
+  getEquipoAsignado(participanteNombre: string, filaId: string): string | null {
+    // Para simplificar, asignamos los equipos en orden de llegada
+    // La primera selección para un participante va a "Equipo 1", la segunda a "Equipo 2"
+    const asignacionesParticipante = this.asignaciones()
+      .filter(a => a.participante === participanteNombre);
+    
+    if (filaId === 'equipo1' && asignacionesParticipante.length > 0) {
+      return asignacionesParticipante[0].equipo_id;
+    }
+    if (filaId === 'equipo2' && asignacionesParticipante.length > 1) {
+      return asignacionesParticipante[1].equipo_id;
+    }
+    return null;
   }
 
-  opcionesPara(d: string): Equipo[] {
-    return this.equiposPorDivision()[d] ?? [];
-  }
-
-  asignadoA(equipoId: string): string[] {
-    return this.asignaciones()
-      .filter(a => a.equipo_id === equipoId)
-      .map(a => a.participante);
-  }
-
-  onChangeCelda(grupo: string, participanteNombre: string, equipoId: string | null) {
+  onChangeCelda(filaId: string, participanteNombre: string, equipoId: string | null) {
     this.loading.set(true);
     this.errorMsg.set(null);
     this.okMsg.set(null);
 
-    this.svc.assignEquipo(participanteNombre, grupo, equipoId).subscribe({
-      next: () => {
-        const byId = this.equipoById();
-        const prev = this.asignaciones().filter(
-          a => !(a.participante === participanteNombre && byId[a.equipo_id]?.grupo === grupo)
-        );
+    // Obtener asignaciones actuales del participante
+    const asignacionesActuales = this.asignaciones()
+      .filter(a => a.participante === participanteNombre);
+    
+    let nuevasAsignaciones = [...this.asignaciones().filter(a => a.participante !== participanteNombre)];
+    
+    if (filaId === 'equipo1') {
+      // Para Equipo 1: reemplazar o eliminar la primera asignación
+      if (equipoId) {
+        nuevasAsignaciones.push({ equipo_id: equipoId, participante: participanteNombre });
+        // Si había una segunda asignación, la mantenemos
+        if (asignacionesActuales.length > 1) {
+          nuevasAsignaciones.push(asignacionesActuales[1]);
+        }
+      } else {
+        // Si se elimina, mantener solo la segunda si existe
+        if (asignacionesActuales.length > 1) {
+          nuevasAsignaciones.push(asignacionesActuales[1]);
+        }
+      }
+    } else if (filaId === 'equipo2') {
+      // Para Equipo 2: asegurar que exista la primera o mantenerla
+      if (asignacionesActuales.length > 0) {
+        nuevasAsignaciones.push(asignacionesActuales[0]);
+      }
+      if (equipoId) {
+        nuevasAsignaciones.push({ equipo_id: equipoId, participante: participanteNombre });
+      }
+    }
 
-        if (equipoId) {
-          prev.push({ equipo_id: equipoId, participante: participanteNombre });
+    // Primero eliminamos todas las asignaciones del participante
+    this.svc.deleteParticipanteAsignaciones(participanteNombre).subscribe({
+      next: () => {
+        // Luego insertamos las nuevas asignaciones una por una
+        if (nuevasAsignaciones.length === 0) {
+          this.asignaciones.set(nuevasAsignaciones);
+          this.okMsg.set('Asignación actualizada');
+          this.loading.set(false);
+          return;
         }
 
-        this.asignaciones.set(prev);
-        this.okMsg.set('Asignación actualizada');
+        // Insertar cada asignación
+        const insertObservables = nuevasAsignaciones.map(asign => 
+          this.svc.assignEquipoSimple(asign.participante, asign.equipo_id)
+        );
+        
+        forkJoin(insertObservables).subscribe({
+          next: () => {
+            this.asignaciones.set(nuevasAsignaciones);
+            this.okMsg.set('Asignación actualizada');
+            this.loading.set(false);
+          },
+          error: (e) => {
+            this.errorMsg.set(e?.message || 'No se pudo actualizar la asignación');
+            this.loading.set(false);
+          }
+        });
       },
-      error: (e) => this.errorMsg.set(e?.message || 'No se pudo actualizar la asignación'),
-      complete: () => this.loading.set(false),
+      error: (e) => {
+        this.errorMsg.set(e?.message || 'No se pudo actualizar la asignación');
+        this.loading.set(false);
+      }
     });
   }
 

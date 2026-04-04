@@ -1,0 +1,179 @@
+.fixture-container {
+  padding-top: 80px;
+  padding-bottom: 20px;
+  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
+  gap: 24px
+}
+
+.fase-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-items: center;
+  gap: 12px;
+  margin-bottom: 30px;
+  margin-left: 20px;
+}
+
+.grupo-card {
+  background: white;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.grupo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.grupo-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 16px;
+  color: white;
+}
+
+.grupo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grupo-titulo h2 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.equipo-row {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.equipo-row:hover {
+  background-color: #f8f9fa;
+}
+
+.equipo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.equipo-logo {
+  width: 24px;
+  height: 16px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.equipo-nombre-container {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.equipo-nombre {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.participante {
+  font-size: 0.7rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.no-equipos {
+  text-align: center;
+  padding: 60px;
+  color: #666;
+}
+
+.no-equipos mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  color: #999;
+}
+
+/* Wrapper para superponer SVG sobre las cards */
+.fixture-wrapper {
+  position: relative;
+  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.lineas-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.fixture-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 40px;
+  background: transparent;
+}
+
+/* Cards con posición relativa para obtener sus coordenadas */
+.grupo-card {
+  position: relative;
+}
+
+/* Wrapper para superponer SVG sobre las cards */
+.fixture-wrapper {
+  position: relative;
+  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.lineas-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.fixture-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: left;
+  align-items: flex-start;
+  gap: 24px;
+  padding-bottom: 40px;
+  background: transparent;
+}
+
+/* Cards con posición relativa para obtener sus coordenadas */
+.grupo-card {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+

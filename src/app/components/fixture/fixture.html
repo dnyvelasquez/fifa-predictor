@@ -1,0 +1,958 @@
+<div class="fixture-wrapper">
+  <svg class="lineas-svg" id="lineasFixture"></svg>
+  
+
+
+
+
+
+<div class="fixture-container">
+
+    
+
+
+
+
+
+    <div class="fase-container">
+        <strong>Fase de Grupos</strong>
+        @for (grupo of (equiposAgrupados$ | async); track grupo.nombre) {
+            <div class="grupo-card">
+                <div class="grupo-header">
+                    <div class="grupo-titulo">
+                        <mat-icon>group</mat-icon>
+                        <h2>Grupo {{ grupo.nombre }}</h2>
+                    </div>
+                </div>
+          
+                @for (equipo of grupo.equipos; track equipo.id) {
+                    <div class="equipo-row">
+                        <div class="equipo-info">
+                            <img [src]="equipo.logo" [alt]="equipo.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ equipo.nombre }}</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        } @empty {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+    </div>
+    
+    <div class="fase-container">
+
+        <strong>Eliminatoria 32</strong>
+
+        @if ((equiposEspeciales$ | async); as especiales) {
+            <div class="grupo-card">
+                <!-- 1E -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoE) {
+                            <img [src]="especiales.unoE.logo" [alt]="especiales.unoE.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoE.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1E</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-1 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresUno) {
+                            <img [src]="especiales.tresUno.logo" [alt]="especiales.tresUno.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresUno.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-1</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1I -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoI) {
+                            <img [src]="especiales.unoI.logo" [alt]="especiales.unoI.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoI.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1I</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-2 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresDos) {
+                            <img [src]="especiales.tresDos.logo" [alt]="especiales.tresDos.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresDos.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-2</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 2A -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosA) {
+                            <img [src]="especiales.dosA.logo" [alt]="especiales.dosA.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.dosA.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">2A</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2B -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosB) {
+                            <img [src]="especiales.dosB.logo" [alt]="especiales.dosB.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosB.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2B</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1F -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoF) {
+                            <img [src]="especiales.unoF.logo" [alt]="especiales.unoF.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoF.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1F</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2C -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosC) {
+                            <img [src]="especiales.dosC.logo" [alt]="especiales.dosC.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosC.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2C</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 2K -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosK) {
+                            <img [src]="especiales.dosK.logo" [alt]="especiales.dosK.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.dosK.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">2K</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2L -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosL) {
+                            <img [src]="especiales.dosL.logo" [alt]="especiales.dosL.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosL.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2L</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1H -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoH) {
+                            <img [src]="especiales.unoH.logo" [alt]="especiales.unoH.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoH.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1H</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2J -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosJ) {
+                            <img [src]="especiales.dosJ.logo" [alt]="especiales.dosJ.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosJ.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2J</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1D -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoD) {
+                            <img [src]="especiales.unoD.logo" [alt]="especiales.unoD.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoD.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1D</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-3 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresTres) {
+                            <img [src]="especiales.tresTres.logo" [alt]="especiales.tresTres.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresTres.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-3</span>
+                        }
+                    </div>
+                </div>
+            </div> 
+
+            <div class="grupo-card">
+                <!-- 1G -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoG) {
+                            <img [src]="especiales.unoG.logo" [alt]="especiales.unoG.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoG.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1G</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-4 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresCuatro) {
+                            <img [src]="especiales.tresCuatro.logo" [alt]="especiales.tresCuatro.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresCuatro.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-4</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1C -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoC) {
+                            <img [src]="especiales.unoC.logo" [alt]="especiales.unoC.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoC.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1C</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2F -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosF) {
+                            <img [src]="especiales.dosF.logo" [alt]="especiales.dosF.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosF.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2F</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 2E -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosE) {
+                            <img [src]="especiales.dosE.logo" [alt]="especiales.dosE.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.dosE.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">2E</span>
+                        }
+                    </div>
+                </div> 
+                <!-- 2I -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosI) {
+                            <img [src]="especiales.dosI.logo" [alt]="especiales.dosI.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosI.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2I</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1A -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoA) {
+                            <img [src]="especiales.unoA.logo" [alt]="especiales.unoA.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoA.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1A</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-5 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresCinco) {
+                            <img [src]="especiales.tresCinco.logo" [alt]="especiales.tresCinco.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresCinco.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-5</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1L -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoL) {
+                            <img [src]="especiales.unoL.logo" [alt]="especiales.unoL.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoL.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1L</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-6 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresSeis) {
+                            <img [src]="especiales.tresSeis.logo" [alt]="especiales.tresSeis.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresSeis.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-6</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1J -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoJ) {
+                            <img [src]="especiales.unoJ.logo" [alt]="especiales.unoJ.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoJ.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1J</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 2H -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosH) {
+                            <img [src]="especiales.dosH.logo" [alt]="especiales.dosH.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosH.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2H</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 2D -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosD) {
+                            <img [src]="especiales.dosD.logo" [alt]="especiales.dosD.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.dosD.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">2D</span>
+                        }
+                    </div>
+                </div> 
+                <!-- 2G -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.dosG) {
+                            <img [src]="especiales.dosG.logo" [alt]="especiales.dosG.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.dosG.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">2G</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1B -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoB) {
+                            <img [src]="especiales.unoB.logo" [alt]="especiales.unoB.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoB.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1B</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-7 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresSiete) {
+                            <img [src]="especiales.tresSiete.logo" [alt]="especiales.tresSiete.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresSiete.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-7</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="grupo-card">
+                <!-- 1K -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.unoK) {
+                            <img [src]="especiales.unoK.logo" [alt]="especiales.unoK.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.unoK.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">1K</span>
+                        }
+                    </div>
+                </div>                
+                <!-- 3-8 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.tresOcho) {
+                            <img [src]="especiales.tresOcho.logo" [alt]="especiales.tresOcho.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.tresOcho.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">3-8</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        } @else {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+        
+    </div>
+
+    <div class="fase-container">
+
+        <strong>Octavos de Final</strong>
+
+        @if ((equiposEspeciales$ | async); as especiales) {
+            <div class="grupo-card">
+                <!-- Equipo 1 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o1) {
+                            <img [src]="especiales.o1.logo" [alt]="especiales.o1.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o1.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 1</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 2 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o2) {
+                            <img [src]="especiales.o2.logo" [alt]="especiales.o2.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o2.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 2</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 3 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o3) {
+                            <img [src]="especiales.o3.logo" [alt]="especiales.o3.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o3.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 3</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 4 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o4) {
+                            <img [src]="especiales.o4.logo" [alt]="especiales.o4.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o4.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 4</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 5 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o5) {
+                            <img [src]="especiales.o5.logo" [alt]="especiales.o5.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o5.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 5</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 6 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o6) {
+                            <img [src]="especiales.o6.logo" [alt]="especiales.o6.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o6.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 6</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 7 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o7) {
+                            <img [src]="especiales.o7.logo" [alt]="especiales.o7.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o7.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 7</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 8 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o8) {
+                            <img [src]="especiales.o8.logo" [alt]="especiales.o8.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o8.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 8</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 9 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o9) {
+                            <img [src]="especiales.o9.logo" [alt]="especiales.o9.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o9.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 9</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 10 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o10) {
+                            <img [src]="especiales.o10.logo" [alt]="especiales.o10.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o10.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 10</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 11 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o11) {
+                            <img [src]="especiales.o11.logo" [alt]="especiales.o11.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o11.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 11</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 12 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o12) {
+                            <img [src]="especiales.o12.logo" [alt]="especiales.o12.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o12.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 12</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 13 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o13) {
+                            <img [src]="especiales.o13.logo" [alt]="especiales.o13.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o13.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 13</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 14 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o14) {
+                            <img [src]="especiales.o14.logo" [alt]="especiales.o14.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o14.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 14</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 15 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o15) {
+                            <img [src]="especiales.o15.logo" [alt]="especiales.o15.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.o15.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 15</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 16 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.o16) {
+                            <img [src]="especiales.o16.logo" [alt]="especiales.o16.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.o16.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 16</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        } @else {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+        
+    </div>
+
+    <div class="fase-container">
+
+        <strong>Cuartos de Final</strong>
+
+        @if ((equiposEspeciales$ | async); as especiales) {
+            <div class="grupo-card">
+                <!-- Equipo 1 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c1) {
+                            <img [src]="especiales.c1.logo" [alt]="especiales.c1.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.c1.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 1</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 2 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c2) {
+                            <img [src]="especiales.c2.logo" [alt]="especiales.c2.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.c2.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 2</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 3 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c3) {
+                            <img [src]="especiales.c3.logo" [alt]="especiales.c3.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.c3.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 3</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 4 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c4) {
+                            <img [src]="especiales.c4.logo" [alt]="especiales.c4.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.c4.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 4</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 5 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c5) {
+                            <img [src]="especiales.c5.logo" [alt]="especiales.c5.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.c5.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 5</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 6 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c6) {
+                            <img [src]="especiales.c6.logo" [alt]="especiales.c6.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.c6.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 6</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 7 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c7) {
+                            <img [src]="especiales.c7.logo" [alt]="especiales.c7.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.c7.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 7</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 8 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.c8) {
+                            <img [src]="especiales.c8.logo" [alt]="especiales.c8.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.c8.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 8</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        } @else {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+        
+    </div>
+
+    <div class="fase-container">
+
+        <strong>Semifinal</strong>
+
+        @if ((equiposEspeciales$ | async); as especiales) {
+            <div class="grupo-card">
+                <!-- Equipo 1 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.s1) {
+                            <img [src]="especiales.s1.logo" [alt]="especiales.s1.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.s1.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 1</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 2 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.s2) {
+                            <img [src]="especiales.s2.logo" [alt]="especiales.s2.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.s2.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 2</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="grupo-card">
+                <!-- Equipo 3 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.s3) {
+                            <img [src]="especiales.s3.logo" [alt]="especiales.s3.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.s3.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 3</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 4 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.s4) {
+                            <img [src]="especiales.s4.logo" [alt]="especiales.s4.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.s4.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 4</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+
+        } @else {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+        
+    </div>
+
+    <div class="fase-container">
+
+        <H2>GRAN FINAL</H2>
+
+        @if ((equiposEspeciales$ | async); as especiales) {
+            <div class="grupo-card">
+                <!-- Equipo 1 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.f1) {
+                            <img [src]="especiales.f1.logo" [alt]="especiales.f1.nombre" class="equipo-logo">
+                            <div class="equipo-nombre-container">
+                                <span class="equipo-nombre">{{ especiales.f1.nombre }}</span>
+                            </div>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 1</span>
+                        }
+                    </div>
+                </div>                
+                <!-- Equipo 2 -->
+                <div class="equipo-row">
+                    <div class="equipo-info">
+                        @if (especiales.f2) {
+                            <img [src]="especiales.f2.logo" [alt]="especiales.f2.nombre" class="equipo-logo">
+                            <span class="equipo-nombre">{{ especiales.f2.nombre }}</span>
+                        } @else {
+                            <span class="equipo-nombre">Equipo 2</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        } @else {
+            <div class="no-equipos">
+                <mat-icon>sports_soccer</mat-icon>
+                <p>No hay equipos disponibles</p>
+            </div>
+        }
+        
+    </div>
+
+
+
+
+     </div>
+
+
+
+
+
+
+</div>
