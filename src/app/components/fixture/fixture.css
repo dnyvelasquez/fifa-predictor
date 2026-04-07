@@ -1,12 +1,12 @@
 .fixture-container {
   padding-top: 80px;
   padding-bottom: 20px;
-  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
+  background: #003B73;
   min-height: 100vh;
+  width: 100%;
   display: flex;
   justify-content: left;
   align-items: flex-start;
-  gap: 24px
 }
 
 .fase-container {
@@ -17,6 +17,8 @@
   gap: 12px;
   margin-bottom: 30px;
   margin-left: 20px;
+  min-width: 220px;
+  min-height: 100hv;
 }
 
 .grupo-card {
@@ -43,11 +45,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.grupo-titulo h2 {
-  margin: 0;
-  font-weight: 600;
 }
 
 .equipo-row {
@@ -105,11 +102,4 @@
   height: 48px;
   margin-bottom: 16px;
   color: #999;
-}
-
-.fixture-wrapper {
-  position: relative;
-  background: linear-gradient(135deg, #003B73 0%, #001F3F 100%);
-  min-height: 100vh;
-  overflow-x: auto;
 }

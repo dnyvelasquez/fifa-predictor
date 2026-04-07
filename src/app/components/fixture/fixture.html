@@ -1,4 +1,5 @@
 <div class="fixture-container">
+
     <div class="fase-container">
         <strong>Fase de Grupos</strong>
         @for (grupo of (equiposAgrupados$ | async); track grupo.nombre) {
@@ -6,7 +7,7 @@
                 <div class="grupo-header">
                     <div class="grupo-titulo">
                         <mat-icon>group</mat-icon>
-                        <h2>Grupo {{ grupo.nombre }}</h2>
+                        <strong>Grupo {{ grupo.nombre }}</strong>
                     </div>
                 </div>
         
@@ -28,8 +29,9 @@
             </div>
         }
     </div>
+
     <div class="fase-container">
-        <strong>Eliminatoria 32</strong>
+        <strong>Eliminatoria 32</strong>        
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- 1E -->
@@ -850,7 +852,7 @@
         }
     </div>
     <div class="fase-container">
-        <H2>GRAN FINAL</H2>
+        <strong>GRAN FINAL</strong>
         @if ((equiposEspeciales$ | async); as especiales) {
             <div class="grupo-card">
                 <!-- Equipo 1 -->
@@ -886,4 +888,3 @@
         }
     </div>
 </div>
-

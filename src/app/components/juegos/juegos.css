@@ -158,10 +158,10 @@
 .grid-row {
   display: grid;
   grid-template-columns: 
-    3fr     /* Local */
+    3fr   /* Local */
     1fr   /* Vs */
-    3fr     /* Visitante */
-    3fr;    /* scheduled */
+    3fr   /* Visitante */
+    3fr;  /* scheduled */
   align-items: center;
   gap: 12px;
   padding: 12px;
