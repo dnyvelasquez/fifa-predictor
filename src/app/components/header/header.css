@@ -70,7 +70,6 @@
   }
 }
 
-/* ===== ESTILOS PARA SUBMENÚ HOVER DE EQUIPOS - VERSIÓN CORREGIDA ===== */
 .menu-button-container {
   position: relative;
   display: inline-block;
@@ -118,76 +117,3 @@
   transition-delay: 0s !important;
 }
 
-
-
-/* .header-toolbar {
-  position: fixed;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  top: 20;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-
-.logo {
-  width: 30px;
-  padding-right: 4px;
-}
-
-.spacer {
-  flex: 1 1 auto;
-}
-
-.menu-desktop {
-  display: none;
-}
-
-.desktop-2 {
-  display: none;
-}
-
-.menu-mobile {
-  display: inline-flex;
-}
-
-.mobile-2 {
-  display: flex;
-}
-
-@media (min-width: 768px) {
-  .menu-desktop {
-    display: flex;
-    justify-content: center;
-    font-size: small;
-    font-weight: bold;
-  }
-  .desktop-2 {
-    display: none;
-  }
-  .menu-mobile {
-    display: inline-flex;
-  }
-  .mobile-2 {
-    display: none;
-  }
-} 
-
-@media (min-width: 1020px) {
-  .menu-desktop {
-    display: flex;
-    justify-content: center;
-    font-size: small;
-    font-weight: bold;
-  }
-  .desktop-2 {
-    display: inline-flex;
-  }
-  .menu-mobile {
-    display: none;
-  }
-  .menu-mobile-2 {
-    display: none;
-  }
-}  */
