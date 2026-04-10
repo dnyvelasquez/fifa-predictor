@@ -27,6 +27,7 @@
               }
               @for (eq of p.equipos; track eq.nombre) {
                   <div class="equipo-item">
+                    <strong>{{ eq.nombre }}</strong>
                     <img [src]="eq.logo" [alt]="eq.nombre" class="equipo-logo" />
                     <span class="equipo-puntaje">{{ eq.pg * 10 + eq.pe * 5 }} puntos</span>
                     <span class="chip-grupo">GRUPO {{ eq.grupo }}</span>
