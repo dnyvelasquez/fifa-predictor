@@ -123,13 +123,17 @@
     margin-top: 6px;
     align-items: center;
   }
+
+  .punt-part {
+    flex-direction: column;
+  }
 }
 
-
-
-
-
-
+.punt-part {
+  display: flex;
+  justify-content: space-around;
+  gap: 8px;
+}
 
 .grid-row {
   display: grid;
@@ -137,8 +141,7 @@
     1.2fr     /* Logo */
     2fr   /* Equipo */
     1.2fr     /* Grupo */
-    2fr     /* Puntos */
-    2fr;  /* Participante */
+    3fr     /* Puntos + Participante*/;
 
   align-items: center;
   gap: 12px;

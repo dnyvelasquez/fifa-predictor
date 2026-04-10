@@ -149,7 +149,6 @@
   font-weight: 500;
 }
 
-/* ========== PANTALLAS GRANDES (≥1024px) ========== */
 @media (min-width: 769px) {
   .tabla-puntajes-card {
     max-width: 80%;
@@ -171,7 +170,6 @@
     padding: 16px 24px;
   }
   
-  /* Contenedor de la información derecha en columna */
   .equipo-info-derecha {
     display: flex;
     flex-direction: column;
@@ -200,7 +198,6 @@
   }
 }
 
-/* ========== PANTALLAS PEQUEÑAS (≤768px) ========== */
 @media (max-width: 768px) {
   .participante {
     flex-direction: column;
@@ -256,153 +253,3 @@
   }
 }
 
-
-
-/* .tabla-puntajes-container {
-  padding-top: 80px;
-  padding-bottom: 20px;
-  background-color: #003B73;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.tabla-puntajes-card {
-  max-width: 90%;
-  padding: 20px;
-  text-align: center;
-}
- 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.logo {
-  width: 50px;
-}
-
-.tabla-puntajes-title {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.table-container {
-  overflow-x: auto;
-  border-radius: 12px;
-  color: black;
-}
-
-.tabla-puntajes-table {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  background-color: white;
-  overflow: hidden; 
-  border-bottom: 1px solid #ddd;
-}
-
-.puntaje {
-  font-size: large;
-  font-weight: bold;
-}
-
-.participante {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: large;
-  font-weight: bold;
-  padding: 12px 8px 8px 8px;
-}
-
-.equipos-group {
-  margin: 8px;
-  padding-top: 8px;
-  border-style: dashed;
-  border-color: #333;
-  border-width: 1px;
-  border-radius: 4px;
-}
-
-.equipos-lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  padding: 8px 8px;
-}
-
-.temporada {
-  font-weight: bold;
-}
-
-.equipo-logo {
-  width: 60px;
-  height: 40px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-}
-
-.equipo-puntaje {
-  font-weight: bold;
-  color: #000;
-  font-size: 14px;
-}
-
-.equipo-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-left: 8px;
-  padding-right: 8px;
-  gap: 4px;
-}
-
-.equipo-info {
-  display: flex;
-  flex-direction: column;
-  font-size: 12px;
-  color: #333;
-}
-
-.participante-item {
-  padding-left: 8px;
-  padding-right: 8px;
-}
-
-.puntaje-item {
-  padding-left: 8px;
-  padding-right: 8px;
-  color: #003366; 
-}
-
-.chip-grupo {
-  background-color: #003B73; 
-  color: #fff;
-  font-size: 0.7em;
-  padding: 4px;
-  border-radius: 8px;
-}
-
-.acumulado-chip{
-  background-color: #FFB612; 
-  color: #fff;
-  font-size: 0.7em;
-  padding: 4px;
-  border-radius: 8px;
-}
-
-
-@media (max-width: 768px) {
-  .tabla-puntajes-table {
-    flex-direction: column;
-  }
-  .equipo-item {
-    padding: 0;
-  }
-} */
