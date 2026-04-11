@@ -17,7 +17,7 @@ import { Participante } from '../../services/data';
     MatIconModule
   ],
   templateUrl: './participante-dialog.html',
-  styles: ['./participante-dialog.css'],
+  styleUrls: ['./participante-dialog.css'],
   
 })
 export class ParticipanteDialog {
