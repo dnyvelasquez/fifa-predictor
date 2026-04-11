@@ -198,3 +198,28 @@
 }
 
 
+/* Agrega esto al final de tu home.css existente */
+
+.participant-row {
+  cursor: pointer;
+}
+
+.participant-card {
+  cursor: pointer;
+}
+
+.participant-row:hover,
+.participant-card:hover {
+  cursor: pointer;
+}
+
+/* Estilo para el panel del diálogo */
+::ng-deep .participante-dialog-panel {
+  max-width: 90vw !important;
+  border-radius: 16px !important;
+}
+
+::ng-deep .participante-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 16px !important;
+}

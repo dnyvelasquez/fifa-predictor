@@ -10,6 +10,87 @@
 
     <h2 class="subtitle">Clasificación de Participantes</h2>
 
+    <!-- Vista de una sola columna sin encabezado (visible en pantallas ≤ 768px) -->
+    <div class="one-column-view">
+      <div class="participants-list">
+        <div class="participant-row" 
+             *ngFor="let p of (participantes$ | async) ?? []; let i = index"
+             [ngClass]="{
+               'primer-lugar': p.max,
+               'segundo-lugar': p.second,
+               'otro-lugar': p.puntaje === 0
+             }"
+             (click)="abrirDetalleParticipante(p)">
+          <div class="participant-info-simple">
+            <div class="participant-name with-icon">
+              <span>{{i + 1}}. {{p.nombre}}</span>
+              @if (p.puntaje !== 0) {
+                @if (p.max) {
+                  <mat-icon class="icono-trofeo">emoji_events</mat-icon>
+                }
+                @else if (p.second) {
+                  <mat-icon class="icono-medalla">military_tech</mat-icon>
+                }
+              }
+            </div>
+            <div class="participant-score-chip">
+              {{p.puntaje}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista en dos columnas (visible en pantallas > 768px) -->
+    <div class="two-columns-view">
+      <div class="participants-grid">
+        <div class="participant-card" 
+             *ngFor="let p of (participantes$ | async) ?? []; let i = index"
+             [ngClass]="{
+               'primer-lugar': p.max,
+               'segundo-lugar': p.second,
+               'otro-lugar': p.puntaje === 0
+             }"
+             (click)="abrirDetalleParticipante(p)">
+          <div class="participant-info">
+            <div class="participant-name with-icon">
+              <span>{{i + 1}}. {{p.nombre}}</span>
+              @if (p.puntaje !== 0) {
+                @if (p.max) {
+                  <mat-icon class="icono-trofeo">emoji_events</mat-icon>
+                }
+                @else if (p.second) {
+                  <mat-icon class="icono-medalla">military_tech</mat-icon>
+                }
+              }
+            </div>
+            <div class="participant-score">
+              {{p.puntaje}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </mat-card>
+</div>
+
+
+
+
+
+<!-- <div class="home-container">
+  <mat-card class="welcome-card">
+    <div class="header">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
+      <h1>FIFA Predictor 2026</h1>
+      <h1> ⚽</h1>
+    </div>
+    <h2 class="subtitle">Copa Mundial de la FIFA 2026</h2>
+    <mat-divider></mat-divider>
+
+    <h2 class="subtitle">Clasificación de Participantes</h2>
+
     <div class="one-column-view">
       <div class="participants-list">
         <div class="participant-row" 
@@ -70,4 +151,4 @@
 
   </mat-card>
 </div>
-
+ -->
