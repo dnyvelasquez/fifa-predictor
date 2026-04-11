@@ -7,7 +7,7 @@
 }
 
 .tabla-puntajes-card-dialog {
-    margin: 0;
+    margin: 8px;
     padding: 20px;
     text-align: center;
     width: 100%;
@@ -162,7 +162,7 @@
     color: #fff;
 }
 
-/* Pantallas grandes */
+
 @media (min-width: 769px) {
     .tabla-puntajes-card-dialog {
     max-width: 700px;
@@ -180,7 +180,7 @@
     flex-direction: row;
     align-items: center;
     gap: 20px;
-    min-width: 260px;
+    min-width: 80px;
     padding: 16px 24px;
     }
     
@@ -212,7 +212,6 @@
     }
 }
 
-/* Pantallas pequeñas */
 @media (max-width: 768px) {
     .tabla-puntajes-card-dialog {
     max-width: 95%;
@@ -250,7 +249,7 @@
     align-items: center;
     gap: 8px;
     width: 100%;
-    max-width: 260px;
+    max-width: 160px;
     padding: 12px;
     }
     
