@@ -197,9 +197,6 @@
   }
 }
 
-
-/* Agrega esto al final de tu home.css existente */
-
 .participant-row {
   cursor: pointer;
 }
@@ -213,7 +210,6 @@
   cursor: pointer;
 }
 
-/* Estilo para el panel del diálogo */
 ::ng-deep .participante-dialog-panel {
   max-width: 90vw !important;
   border-radius: 16px !important;

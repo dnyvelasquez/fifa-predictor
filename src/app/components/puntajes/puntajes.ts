@@ -52,7 +52,7 @@ export class Puntajes {
       });
   }
   
-    resetAll() {
+  resetPuntajes() {
     const ok = confirm('¿Poner en 0 el puntaje de TODOS los equipos?');
     if (!ok) return;
 
@@ -65,7 +65,20 @@ export class Puntajes {
     });
   }
 
-logout(): void {
+  resetAcumulados() {
+    const ok = confirm('¿Poner en 0 el puntaje de TODOS los acumulados?');
+    if (!ok) return;
+
+    this.service.resetAcumulados().subscribe({
+      next: () => {         
+        alert('Acumulados reiniciados a 0');
+      },
+      error: (e) => alert('Error al resetear acumulados: ' + (e?.message || ''))
+    });
+  }
+
+
+  logout(): void {
     this.service.logout();
     this.router.navigate(['/login']);
   }  

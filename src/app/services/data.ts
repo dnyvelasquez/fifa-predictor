@@ -721,7 +721,6 @@ export class Service {
     );
   }
 
-
   resetAsignaciones() {
     return from(this.supabase.from('asignacion').delete().neq('equipo_id', ''))
       .pipe(
@@ -767,6 +766,19 @@ export class Service {
         .not('id', 'is', null)
     );
   }
+
+  resetAcumulados(): Observable<any> {
+    return from(      
+      this.supabase
+        .from('participantes')
+        .update({ 
+          acumulado: 0,
+        })
+        .not('id', 'is', null)
+    );
+  }
+
+
 
   acumularPuntajesEnParticipantes() {
     return forkJoin({
