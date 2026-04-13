@@ -18,6 +18,12 @@
   flex: 1 1 auto;
 }
 
+.title {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
 .menu-desktop {
   display: none;
 }

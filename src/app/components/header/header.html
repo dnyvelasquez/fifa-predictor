@@ -1,7 +1,9 @@
 <mat-toolbar color="primary" class="header-toolbar">
-  <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo" routerLink="/">
-  <span class="title" routerLink="/">FIFA Predictor ⚽</span>
-  <span class="spacer"></span>
+  <div class="title" routerLink="/">
+    <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
+    <span class="title">FIFA Predictor ⚽</span>
+    <span class="spacer"></span>
+  </div>
   
   <nav class="menu-desktop">
     <button class="menu-button" mat-button routerLink="/">
@@ -14,7 +16,6 @@
       <mat-icon class="icon">sports_soccer</mat-icon> Juegos de la semana
     </button>
 
-  <!-- Botón Equipos con submenú hover - Versión corregida -->
   <div 
     class="menu-button-container" 
     (mouseenter)="equiposMenuTrigger.openMenu()"
