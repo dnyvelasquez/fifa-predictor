@@ -43,7 +43,6 @@ export class BorrarUsuario implements OnInit {
   perPage = 20;
   q = '';
 
-  // resultado
   users: Array<{ id: string; email: string | null; full_name: string | null; created_at: string; last_sign_in_at: string | null }> = [];
 
   search = this.fb.control('');
@@ -92,14 +91,10 @@ export class BorrarUsuario implements OnInit {
       complete: () => this.loading = false
     });
   }
-
   
   logout(): void {
     this.service.logout();
     this.router.navigate(['/login']);
   }  
-
-
-
 
 }

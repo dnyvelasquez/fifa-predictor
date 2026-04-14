@@ -1,4 +1,3 @@
-// clasificacion.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -15,6 +14,7 @@ import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-clasificacion',
+  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,
@@ -40,16 +40,13 @@ export class Clasificacion implements OnInit {
   saving = signal(false);
   message = signal<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Opciones para Eliminatoria 32
   e32Options = ['1', '2', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8'];
   
-  // Opciones dinámicas para las siguientes fases
   ofOptions = signal<string[]>([]);
   cfOptions = signal<string[]>([]);
   sfOptions = signal<string[]>([]);
   gfOptions = signal<string[]>([]);
 
-  // Valores ocupados
   usedOfValues = signal<Set<string>>(new Set());
   usedCfValues = signal<Set<string>>(new Set());
   usedSfValues = signal<Set<string>>(new Set());
@@ -63,7 +60,6 @@ export class Clasificacion implements OnInit {
     this.loading.set(true);
     try {
       const equipos = await lastValueFrom(this.svc.getEquipos());
-      // Ordenar equipos por grupo y luego por ID como están en la BD
       const sortedEquipos = [...equipos].sort((a, b) => {
         if (a.grupo === b.grupo) {
           return a.id.localeCompare(b.id);
@@ -81,25 +77,21 @@ export class Clasificacion implements OnInit {
   }
 
   updateOptions() {
-    // Actualizar opciones de Octavos (1-16)
     const equiposConE32 = this.equipos().filter(e => e.e32 && e.e32.trim() !== '');
     const usedOf = new Set(equiposConE32.map(e => e.of).filter(v => v && v.trim() !== ''));
     this.usedOfValues.set(usedOf);
     this.ofOptions.set(Array.from({ length: 16 }, (_, i) => (i + 1).toString()));
 
-    // Actualizar opciones de Cuartos (1-8)
     const equiposConOF = equiposConE32.filter(e => e.of && e.of.trim() !== '');
     const usedCf = new Set(equiposConOF.map(e => e.cf).filter(v => v && v.trim() !== ''));
     this.usedCfValues.set(usedCf);
     this.cfOptions.set(Array.from({ length: 8 }, (_, i) => (i + 1).toString()));
 
-    // Actualizar opciones de Semifinal (1-4)
     const equiposConCF = equiposConOF.filter(e => e.cf && e.cf.trim() !== '');
     const usedSf = new Set(equiposConCF.map(e => e.sf).filter(v => v && v.trim() !== ''));
     this.usedSfValues.set(usedSf);
     this.sfOptions.set(Array.from({ length: 4 }, (_, i) => (i + 1).toString()));
 
-    // Actualizar opciones de Gran Final (1-2)
     const equiposConSF = equiposConCF.filter(e => e.sf && e.sf.trim() !== '');
     const usedGf = new Set(equiposConSF.map(e => e.gf).filter(v => v && v.trim() !== ''));
     this.usedGfValues.set(usedGf);
@@ -124,10 +116,8 @@ export class Clasificacion implements OnInit {
   async updateEquipo(equipo: Equipo, field: keyof Equipo, value: string) {
     this.saving.set(true);
     try {
-      // Validaciones según el campo
       if (field === 'e32') {
         if (value === '1' || value === '2') {
-          // Validar que en el mismo grupo solo haya un 1 y un 2
           const mismoGrupo = this.equipos().filter(e => e.grupo === equipo.grupo);
           const tiene1 = mismoGrupo.some(e => e.e32 === '1' && e.id !== equipo.id);
           const tiene2 = mismoGrupo.some(e => e.e32 === '2' && e.id !== equipo.id);
@@ -142,7 +132,6 @@ export class Clasificacion implements OnInit {
           }
         }
         
-        // Si se cambia e32, limpiar fases posteriores
         if (equipo.e32 !== value) {
           equipo.of = '';
           equipo.cf = '';
@@ -152,17 +141,14 @@ export class Clasificacion implements OnInit {
       }
 
       if (field === 'of' && value) {
-        // Validar que no se repita el número
         if (this.usedOfValues().has(value) && equipo.of !== value) {
           this.showMessage(`El número ${value} ya está asignado en Octavos de Final`, 'error');
           return;
         }
-        // Validar que el equipo tenga e32
         if (!equipo.e32 || equipo.e32.trim() === '') {
           this.showMessage('Debe asignar Eliminatoria 32 primero', 'error');
           return;
         }
-        // Limpiar fases posteriores
         if (equipo.of !== value) {
           equipo.cf = '';
           equipo.sf = '';
@@ -210,11 +196,9 @@ export class Clasificacion implements OnInit {
         }
       }
 
-      // Actualizar en la base de datos
       const updateData: Partial<Equipo> = {};
       updateData[field] = value as any;
       
-      // Si es e32 y cambió, limpiar los otros campos en la BD también
       if (field === 'e32' && equipo.e32 !== value) {
         updateData.of = '';
         updateData.cf = '';
@@ -238,7 +222,6 @@ export class Clasificacion implements OnInit {
 
       if (error) throw error;
 
-      // Actualizar local
       (equipo as any)[field] = value;
       if (updateData.of !== undefined) equipo.of = updateData.of;
       if (updateData.cf !== undefined) equipo.cf = updateData.cf;
@@ -272,7 +255,6 @@ export class Clasificacion implements OnInit {
       
       await Promise.all(updates);
       
-      // Actualizar señal local
       this.equipos.update(equipos => 
         equipos.map(e => ({ ...e, e32: '', of: '', cf: '', sf: '', gf: '' }))
       );
@@ -297,7 +279,6 @@ export class Clasificacion implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // Helper para verificar si una opción debe estar deshabilitada
   isOptionDisabled(field: string, value: string, equipo: Equipo): boolean {
     if (field === 'e32') {
       if (value === '1' || value === '2') {
@@ -336,6 +317,5 @@ export class Clasificacion implements OnInit {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([grupo, equipos]) => ({ grupo, equipos }));
   }
-
 
 }

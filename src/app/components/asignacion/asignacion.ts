@@ -40,7 +40,6 @@ export class Asignacion implements OnInit {
   equipos       = signal<Equipo[]>([]);
   asignaciones  = signal<AsignacionRow[]>([]);
 
-  // Definimos las dos filas fijas
   filas = [
     { id: 'equipo1', label: 'Equipo 1' },
     { id: 'equipo2', label: 'Equipo 2' }
@@ -71,15 +70,11 @@ export class Asignacion implements OnInit {
     });
   }
 
-  // Todos los equipos ordenados alfabéticamente
   equiposOrdenados = computed(() => {
     return [...this.equipos()].sort((a, b) => a.nombre.localeCompare(b.nombre));
   });
 
-  // Obtener el equipo asignado a un participante para una fila específica
   getEquipoAsignado(participanteNombre: string, filaId: string): string | null {
-    // Para simplificar, asignamos los equipos en orden de llegada
-    // La primera selección para un participante va a "Equipo 1", la segunda a "Equipo 2"
     const asignacionesParticipante = this.asignaciones()
       .filter(a => a.participante === participanteNombre);
     
@@ -97,28 +92,23 @@ export class Asignacion implements OnInit {
     this.errorMsg.set(null);
     this.okMsg.set(null);
 
-    // Obtener asignaciones actuales del participante
     const asignacionesActuales = this.asignaciones()
       .filter(a => a.participante === participanteNombre);
     
     let nuevasAsignaciones = [...this.asignaciones().filter(a => a.participante !== participanteNombre)];
     
     if (filaId === 'equipo1') {
-      // Para Equipo 1: reemplazar o eliminar la primera asignación
       if (equipoId) {
         nuevasAsignaciones.push({ equipo_id: equipoId, participante: participanteNombre });
-        // Si había una segunda asignación, la mantenemos
         if (asignacionesActuales.length > 1) {
           nuevasAsignaciones.push(asignacionesActuales[1]);
         }
       } else {
-        // Si se elimina, mantener solo la segunda si existe
         if (asignacionesActuales.length > 1) {
           nuevasAsignaciones.push(asignacionesActuales[1]);
         }
       }
     } else if (filaId === 'equipo2') {
-      // Para Equipo 2: asegurar que exista la primera o mantenerla
       if (asignacionesActuales.length > 0) {
         nuevasAsignaciones.push(asignacionesActuales[0]);
       }
@@ -127,10 +117,8 @@ export class Asignacion implements OnInit {
       }
     }
 
-    // Primero eliminamos todas las asignaciones del participante
     this.svc.deleteParticipanteAsignaciones(participanteNombre).subscribe({
       next: () => {
-        // Luego insertamos las nuevas asignaciones una por una
         if (nuevasAsignaciones.length === 0) {
           this.asignaciones.set(nuevasAsignaciones);
           this.okMsg.set('Asignación actualizada');
@@ -138,7 +126,6 @@ export class Asignacion implements OnInit {
           return;
         }
 
-        // Insertar cada asignación
         const insertObservables = nuevasAsignaciones.map(asign => 
           this.svc.assignEquipoSimple(asign.participante, asign.equipo_id)
         );
