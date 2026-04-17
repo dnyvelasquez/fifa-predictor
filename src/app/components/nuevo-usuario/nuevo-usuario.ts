@@ -31,10 +31,12 @@ import { AuthService } from '../../services/auth/auth';
 })
 export class NuevoUsuario implements OnDestroy {
 
-  constructor(private authService: AuthService) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) { }
 
   private fb = inject(FormBuilder);
-  private router = inject(Router);
   private destroy$ = new Subject<void>();
 
   loading = false;
