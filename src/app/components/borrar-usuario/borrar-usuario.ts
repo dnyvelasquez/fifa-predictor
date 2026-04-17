@@ -32,10 +32,7 @@ export class BorrarUsuario implements OnInit {
   
   private fb = inject(FormBuilder);
 
-  constructor(
-    private router: Router,
-    private authService: AuthService,
-  ) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
 
   loading = false;

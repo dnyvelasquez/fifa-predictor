@@ -37,8 +37,8 @@ export class Asignacion implements OnInit {
     private participantesService: ParticipantesService,
     private equiposService: EquiposService,
     private asignacionService: AsignacionService,
-    private authService: AuthService,
-  ) { }
+    private authService: AuthService
+  ) {}
 
 
   private router = inject(Router);

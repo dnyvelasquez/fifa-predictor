@@ -36,11 +36,14 @@ type Row = { id: string; nombre: string; numero: number };
 })
 export class Participantes implements OnInit {
 
-  private fb = inject(FormBuilder);
-  private participantesService = inject(ParticipantesService);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  constructor(
+    private authService: AuthService,
+    private participantesService: ParticipantesService,
+    private router: Router
+  ) {}
 
+  private fb = inject(FormBuilder);
+  
   loading = false;
   errorMsg: string | null = null;
   okMsg: string | null = null;  
