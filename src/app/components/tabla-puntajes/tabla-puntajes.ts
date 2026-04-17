@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Service, Participante } from '../../services/data';
+import { ParticipantesService, Participante } from '../../services/participantes';
 import { AsyncPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -26,9 +26,9 @@ import { CommonModule } from '@angular/common';
 export class TablaPuntajes  {
   participantes$: Observable<Participante[]>;
 
-  constructor(private service: Service) {
+  constructor(private participantesService: ParticipantesService) {
 
-    this.participantes$ = this.service.getParticipantesConPuntaje();
+    this.participantes$ = this.participantesService.getParticipantesConPuntaje();
     
   }
 
