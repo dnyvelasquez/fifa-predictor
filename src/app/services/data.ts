@@ -440,20 +440,6 @@ export class Service {
     );
   }
 
-  getAsignaciones() {
-    return from(
-      this.supabaseClient
-        .from('asignacion')
-        .select('id,equipo_id,participante')
-        .order('equipo_id', { ascending: true })
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return (data ?? []) as Asignacion[];
-      })
-    );
-  }
- 
   getAllJuegos(): Observable<Juego[]> {
     return forkJoin({
       juegos: from(
@@ -619,16 +605,6 @@ export class Service {
     );
   }
 
-  resetAsignaciones() {
-    return from(this.supabaseClient.from('asignacion').delete().neq('equipo_id', ''))
-      .pipe(
-        map(({ error }: any) => {
-          if (error) throw error;
-          return { ok: true };
-        })
-      );
-  }
-
   actualizarPuntaje(id: string, pg: number, pe: number, pp: number, p32: number, po: number, pc: number, ps: number, pf: number): Observable<any> {
     return from(
       this.supabaseClient
@@ -686,33 +662,6 @@ export class Service {
     );
   }
 
-  deleteParticipanteAsignaciones(participanteNombre: string): Observable<any> {
-    return from(
-      this.supabaseClient
-        .from('asignacion')
-        .delete()
-        .eq('participante', participanteNombre)
-    ).pipe(
-      map(({ error }: any) => {
-        if (error) throw error;
-        return { ok: true };
-      })
-    );
-  }
-
-  assignEquipoSimple(participanteNombre: string, equipoId: string): Observable<any> {
-    return from(
-      this.supabaseClient
-        .from('asignacion')
-        .insert([{ equipo_id: equipoId, participante: participanteNombre }])
-        .select()
-    ).pipe(
-      map(({ error }: any) => {
-        if (error && error.code !== '23505') throw error;
-        return { ok: true };
-      })
-    );
-  }
 
 }
 

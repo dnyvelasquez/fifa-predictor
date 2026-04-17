@@ -6,7 +6,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
-import { Service, Participante, Equipo } from '../../services/data';
+import { ParticipantesService, Participante } from '../../services/participantes';
+import { EquiposService, Equipo } from '../../services/equipos';
+import { AsignacionService } from '../../services/asignacion';
 import { forkJoin } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
@@ -30,8 +32,15 @@ type AsignacionRow = { id?: string; equipo_id: string; participante: string };
   styleUrls: ['./asignacion.css'],
 })
 export class Asignacion implements OnInit {
-  private svc = inject(Service);
-  private authService = inject(AuthService);
+
+  constructor(
+    private participantesService: ParticipantesService,
+    private equiposService: EquiposService,
+    private asignacionService: AsignacionService,
+    private authService: AuthService,
+  ) { }
+
+
   private router = inject(Router);
 
   loading = signal(true);
@@ -55,9 +64,9 @@ export class Asignacion implements OnInit {
     this.okMsg.set(null);
 
     forkJoin({
-      participantes: this.svc.getParticipantes(),
-      equipos:       this.svc.getEquipos(), 
-      asign:         this.svc.getAsignaciones(),
+      participantes: this.participantesService.getParticipantes(),
+      equipos:       this.equiposService.getEquipos(), 
+      asign:         this.asignacionService.getAsignaciones(),
     }).subscribe({
       next: ({ participantes, equipos, asign }) => {
         const ordPart = [...participantes].sort(
@@ -119,7 +128,7 @@ export class Asignacion implements OnInit {
       }
     }
 
-    this.svc.deleteParticipanteAsignaciones(participanteNombre).subscribe({
+    this.asignacionService.deleteParticipanteAsignaciones(participanteNombre).subscribe({
       next: () => {
         if (nuevasAsignaciones.length === 0) {
           this.asignaciones.set(nuevasAsignaciones);
@@ -129,7 +138,7 @@ export class Asignacion implements OnInit {
         }
 
         const insertObservables = nuevasAsignaciones.map(asign => 
-          this.svc.assignEquipoSimple(asign.participante, asign.equipo_id)
+          this.asignacionService.assignEquipoSimple(asign.participante, asign.equipo_id)
         );
         
         forkJoin(insertObservables).subscribe({
@@ -159,7 +168,7 @@ export class Asignacion implements OnInit {
     this.errorMsg.set(null);
     this.okMsg.set(null);
 
-    this.svc.resetAsignaciones().subscribe({
+    this.asignacionService.resetAsignaciones().subscribe({
       next: () => {
         this.asignaciones.set([]);
         this.okMsg.set('Asignaciones reiniciadas');
