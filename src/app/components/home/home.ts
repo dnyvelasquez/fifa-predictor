@@ -5,10 +5,10 @@ import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Service, Participante } from '../../services/data';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ParticipanteDialog } from '../participante-dialog/participante-dialog';
+import { ParticipantesService, Participante } from '../../services/participantes';
 
 @Component({
   selector: 'app-home',
@@ -32,8 +32,8 @@ export class Home {
   participantes$: Observable<Participante[]>;
 
   
-  constructor(private service: Service, private dialog: MatDialog) {
-    this.participantes$ = this.service.getParticipantesConPuntaje();
+  constructor(private participantesService: ParticipantesService, private dialog: MatDialog) {
+    this.participantes$ = this.participantesService.getParticipantesConPuntaje();
   }
 
   abrirDetalleParticipante(participante: Participante): void {
