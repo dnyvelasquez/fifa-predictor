@@ -2,7 +2,7 @@
 
     <div class="fase-container">
         <strong>Fase de Grupos</strong>
-        @for (grupo of (equiposAgrupados$ | async); track grupo.nombre) {
+        @for (grupo of (grupoEquipos$ | async); track grupo.nombre) {
             <div class="grupo-card">
                 <div class="grupo-header">
                     <div class="grupo-titulo">

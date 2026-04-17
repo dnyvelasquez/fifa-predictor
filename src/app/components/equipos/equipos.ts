@@ -3,9 +3,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTableModule } from '@angular/material/table';
 import { AsyncPipe } from '@angular/common';
-import { Observable, map } from 'rxjs';
-import { Service, Equipo } from '../../services/data';
+import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { EquiposService, Equipo } from '../../services/equipos';
+
 
 @Component({
   selector: 'app-equipos',
@@ -25,11 +26,10 @@ export class Equipos  {
 
   equipos$: Observable<Equipo[]>;
 
-  constructor(private service: Service) {
+  constructor(private equiposService: EquiposService) {
 
-    this.equipos$ = this.service.getEquipos(); 
+    this.equipos$ = this.equiposService.getEquipos(); 
 
   }
-
 
 }
