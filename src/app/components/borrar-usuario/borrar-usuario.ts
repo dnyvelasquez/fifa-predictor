@@ -29,10 +29,13 @@ import { AuthService } from '../../services/auth/auth';
 })
 export class BorrarUsuario implements OnInit {
 
-  private authService = inject(AuthService);
+  
   private fb = inject(FormBuilder);
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+  ) {}
 
 
   loading = false;
