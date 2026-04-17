@@ -359,6 +359,27 @@ export class JuegosService {
     );
   }
 
+  actualizarJuego(juego: Juego): Observable<Juego> {
+    const { id, lscore, vscore, ...resto } = juego;
+    
+    return from(
+      this.supabaseClient
+        .from('juegos')
+        .update({ 
+          lscore: lscore || 0,
+          vscore: vscore || 0
+        })
+        .eq('id', id)
+        .select()
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Juego no encontrado');
+        return { ...data[0], ...resto } as Juego;
+      })
+    );
+  }
+
   actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
     return from(
       this.supabaseClient

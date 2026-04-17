@@ -10,7 +10,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-// import { Equipo, Service } from '../../services/data';
 import { AuthService } from '../../services/auth/auth';
 import { EquiposService, Equipo } from '../../services/equipos';
 import { ParticipantesService } from '../../services/participantes';
@@ -45,7 +44,6 @@ export class Puntajes {
     private authService: AuthService, 
     private equiposService: EquiposService,
     private participantesService: ParticipantesService,
-    //private service: Service,
     private router: Router 
   ) {
 
