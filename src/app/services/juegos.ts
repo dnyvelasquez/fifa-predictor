@@ -304,5 +304,92 @@ export class JuegosService {
       })
     );
   }
+
+  getAllJuegos(): Observable<Juego[]> {
+    return forkJoin({
+      juegos: from(
+        this.supabaseClient
+          .from('juegos')
+          .select('*')
+          .order('fecha', { ascending: false })
+          .order('hora', { ascending: false })
+      ).pipe(map((res: any) => res.data || [])),
+      equipos: from(
+        this.supabaseClient.from('equipos').select('*')
+      ).pipe(map((res: any) => res.data || [])),
+      asign: from(
+        this.supabaseClient.from('asignacion').select('equipo_id,participante')
+      ).pipe(map((res: any) => res.data || []))
+    }).pipe(
+      map(({ juegos, equipos, asign }: any) => {
+        const byNombre: Record<string, any> = {};
+        const byId: Record<string, any> = {};
+        for (const e of equipos) { 
+          byNombre[e.nombre] = e; 
+          byId[e.id] = e; 
+        }
+
+        const participantesPorEquipoId: Record<string, string[]> = {};
+        for (const a of asign as Array<{equipo_id: string; participante: string}>) {
+          if (!a?.equipo_id) continue;
+          const p = (a.participante || '').trim();
+          if (!p) continue;
+          (participantesPorEquipoId[a.equipo_id] ??= []).push(p);
+        }
+
+        const enrich = (j: any): Juego => {
+          const v = byNombre[j.visitante];
+          const l = byNombre[j.local];
+          const listV = v ? (participantesPorEquipoId[v.id] ?? []) : [];
+          const listL = l ? (participantesPorEquipoId[l.id] ?? []) : [];
+
+          return {
+            ...j,
+            logoVisitante: v?.logo || '',
+            logoLocal:     l?.logo || '',
+            participanteVisitante: listV.join(' / '),
+            participanteLocal:     listL.join(' / '),
+          } as Juego;
+        };
+
+        return (juegos as any[])
+          .map(enrich)
+          .sort((a: Juego, b: Juego) => this.toTs(a.fecha, a.hora) - this.toTs(b.fecha, b.hora));
+      })
+    );
+  }
+
+  actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
+    return from(
+      this.supabaseClient
+        .from('juegos')
+        .update({ 
+          lscore: lscore || 0,
+          vscore: vscore || 0
+        })
+        .eq('id', id)
+        .select()
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Juego no encontrado');
+        return data[0] as Juego;
+      })
+    );
+  }  
+
+  eliminarJuego(id: string): Observable<void> {
+    return from(
+      this.supabaseClient
+        .from('juegos')
+        .delete()
+        .eq('id', id)
+    ).pipe(
+      map(({ error }: any) => {
+        if (error) throw error;
+        return;
+      })
+    );
+  }
   
 }

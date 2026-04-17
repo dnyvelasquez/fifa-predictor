@@ -15,8 +15,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { firstValueFrom } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
-import { Service, Equipo, Juego } from '../../services/data';
 import { AuthService } from '../../services/auth/auth';
+import { JuegosService, Juego } from '../../services/juegos';
+import { EquiposService, Equipo } from '../../services/equipos';
 
 function distintos(control: AbstractControl): ValidationErrors | null {
   const v = control.get('visitante')?.value;
@@ -49,11 +50,11 @@ function distintos(control: AbstractControl): ValidationErrors | null {
 })
 export class IngresarJuego implements OnInit {
   private fb = inject(FormBuilder);
-  private svc = inject(Service);
 
   constructor(
     private authService: AuthService,
-    private service: Service, 
+    private juegosService: JuegosService,
+    private equiposService: EquiposService,    
     private router: Router
   ) {}
 
@@ -86,7 +87,7 @@ export class IngresarJuego implements OnInit {
   }
 
   cargarEquipos(): void {
-    this.svc.getEquipos().subscribe({
+    this.equiposService.getEquipos().subscribe({
       next: (eqs) => {
         this.equipos = eqs ?? [];
       },
@@ -97,7 +98,7 @@ export class IngresarJuego implements OnInit {
   }
 
   cargarJuegos(): void {
-    this.svc.getAllJuegos().subscribe({
+    this.juegosService.getAllJuegos().subscribe({
       next: (juegos) => {
         this.juegos = juegos ?? [];
       },
@@ -138,7 +139,7 @@ export class IngresarJuego implements OnInit {
     try {
       const fechaStr = this.formatYYYYMMDD(fecha as Date);
 
-      await firstValueFrom(this.svc.crearJuego({
+      await firstValueFrom(this.juegosService.crearJuego({
         visitante: String(visitante),
         local: String(local),
         fase: String(fase),
@@ -166,7 +167,7 @@ export class IngresarJuego implements OnInit {
         return;
       }
       
-      await firstValueFrom(this.svc.actualizarScores(juego.id, lscore, vscore));
+      await firstValueFrom(this.juegosService.actualizarScores(juego.id, lscore, vscore));
       
       await this.cargarJuegos();
       
@@ -179,7 +180,7 @@ export class IngresarJuego implements OnInit {
   async eliminarJuego(id: string) {
     if (confirm('¿Estás seguro de eliminar este juego? Esta acción no se puede deshacer.')) {
       try {
-        await firstValueFrom(this.svc.eliminarJuego(id));
+        await firstValueFrom(this.juegosService.eliminarJuego(id));
         await this.cargarJuegos();
       } catch (err: any) {
         this.errorMsg = err?.message || 'No fue posible eliminar el juego';

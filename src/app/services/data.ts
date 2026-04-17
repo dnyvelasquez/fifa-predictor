@@ -731,39 +731,6 @@ export class Service {
     );
   }
 
-  eliminarJuego(id: string): Observable<void> {
-    return from(
-      this.supabaseClient
-        .from('juegos')
-        .delete()
-        .eq('id', id)
-    ).pipe(
-      map(({ error }: any) => {
-        if (error) throw error;
-        return;
-      })
-    );
-  }
-
-  actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
-    return from(
-      this.supabaseClient
-        .from('juegos')
-        .update({ 
-          lscore: lscore || 0,
-          vscore: vscore || 0
-        })
-        .eq('id', id)
-        .select()
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        if (!data || data.length === 0) throw new Error('Juego no encontrado');
-        return data[0] as Juego;
-      })
-    );
-  }  
-
   deleteParticipanteAsignaciones(participanteNombre: string): Observable<any> {
     return from(
       this.supabaseClient
