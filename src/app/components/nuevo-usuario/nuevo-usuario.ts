@@ -30,8 +30,10 @@ import { AuthService } from '../../services/auth/auth';
   styleUrls: ['./nuevo-usuario.css']
 })
 export class NuevoUsuario implements OnDestroy {
+
+  constructor(private authService: AuthService) { }
+
   private fb = inject(FormBuilder);
-  private authService = inject(AuthService); 
   private router = inject(Router);
   private destroy$ = new Subject<void>();
 
