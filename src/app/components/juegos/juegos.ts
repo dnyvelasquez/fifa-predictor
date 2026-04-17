@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Service, Juego } from '../../services/data';
+import { JuegosService, Juego, GrupoJuegos } from '../../services/juegos';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
@@ -9,12 +9,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { forkJoin, Observable, of } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { map } from 'rxjs/operators';
-
-interface GrupoJuegos {
-  fecha: string;
-  fases: string[];
-  juegos: Juego[];
-}
 
 @Component({
   selector: 'app-juegos',
@@ -39,17 +33,17 @@ export class Juegos  {
   minWeek: number | null = null;
   maxWeek: number | null = null;
 
-  constructor(private service: Service) {
+  constructor(private juegosService: JuegosService) {
     forkJoin({
-      sem: this.service.getSemanaActualId(),
-      lim: this.service.getExtremosSemanas()
+      sem: this.juegosService.getSemanaActualId(),
+      lim: this.juegosService.getExtremosSemanas()
     }).subscribe(({ sem, lim }) => {
       this.currentWeekId = sem ?? lim.min ?? null;
       this.minWeek = lim.min;
       this.maxWeek = lim.max;
 
       if (this.currentWeekId != null) {
-        this.juegos$ = this.service.getJuegosPorSemanaId(this.currentWeekId);
+        this.juegos$ = this.juegosService.getJuegosPorSemanaId(this.currentWeekId);
         this.setupAgrupacion();
       } else {
         this.juegos$ = of([]);
@@ -87,18 +81,18 @@ export class Juegos  {
   private loadWeek(id: number | null) {
     if (id == null) return;
     this.currentWeekId = id;
-    this.juegos$ = this.service.getJuegosPorSemanaId(id);
+    this.juegos$ = this.juegosService.getJuegosPorSemanaId(id);
     this.setupAgrupacion();
   }
 
   prevWeek() {
     if (this.currentWeekId == null) return;
-    this.service.getSemanaAnteriorId(this.currentWeekId).subscribe(id => this.loadWeek(id));
+    this.juegosService.getSemanaAnteriorId(this.currentWeekId).subscribe(id => this.loadWeek(id));
   }
 
   nextWeek() {
     if (this.currentWeekId == null) return;
-    this.service.getSemanaSiguienteId(this.currentWeekId).subscribe(id => this.loadWeek(id));
+    this.juegosService.getSemanaSiguienteId(this.currentWeekId).subscribe(id => this.loadWeek(id));
   }
 }
 
