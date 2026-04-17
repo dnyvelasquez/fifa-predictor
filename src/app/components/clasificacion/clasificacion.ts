@@ -35,12 +35,14 @@ import { AuthService } from '../../services/auth/auth';
 
 export class Clasificacion implements OnInit {
 
-  constructor(private equiposService: EquiposService) {}
+  constructor(
+    private authService: AuthService,
+    private equiposService: EquiposService,
+    private router: Router
+  ) {}
 
   private svc = inject(Service);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-
+  
   equipos = signal<Equipo[]>([]);
   loading = signal(false);
   saving = signal(false);
