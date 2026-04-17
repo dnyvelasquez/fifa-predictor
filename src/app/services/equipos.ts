@@ -304,17 +304,6 @@ export class EquiposService {
     );
   }
 
-  resetAcumulados(): Observable<any> {
-    return from(      
-      this.supabaseClient
-        .from('participantes')
-        .update({ 
-          acumulado: 0,
-        })
-        .not('id', 'is', null)
-    );
-  }
-
   cargarEquipos(): Observable<{ nombre: string, equipos: Equipo[] }[]> {
     return this.getEquipos().pipe(
       map(equipos => {

@@ -10,8 +10,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Equipo, Service } from '../../services/data';
+// import { Equipo, Service } from '../../services/data';
 import { AuthService } from '../../services/auth/auth';
+import { EquiposService, Equipo } from '../../services/equipos';
+import { ParticipantesService } from '../../services/participantes';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -41,16 +43,18 @@ export class Puntajes {
 
   constructor(
     private authService: AuthService, 
-    private service: Service,
+    private equiposService: EquiposService,
+    private participantesService: ParticipantesService,
+    //private service: Service,
     private router: Router 
   ) {
 
-    this.equipos$ = this.service.getEquipos(); 
+    this.equipos$ = this.equiposService.getEquipos(); 
 
   }
 
   guardarPuntos(equipo: Equipo) {
-    this.service.actualizarPuntaje(equipo.id, equipo.pg, equipo.pe, equipo.pp, equipo.p32, equipo.po, equipo.pc, equipo.ps, equipo.pf)
+    this.equiposService.actualizarPuntaje(equipo.id, equipo.pg, equipo.pe, equipo.pp, equipo.p32, equipo.po, equipo.pc, equipo.ps, equipo.pf)
       .subscribe({
         next: () => alert(`Puntaje actualizado para ${equipo.nombre}`),
         error: () => alert('Error al actualizar puntaje:')
@@ -61,10 +65,10 @@ export class Puntajes {
     const ok = confirm('¿Sumar el puntaje de cada equipo al "acumulado" de su participante?');
     if (!ok) return;
 
-    this.service.acumularPuntajesEnParticipantes().subscribe({
+    this.participantesService.acumularPuntajesEnParticipantes().subscribe({
       next: (r: any) => {
         alert(`Acumulado actualizado (${r?.updated ?? 0} participante(s)).`);
-        this.equipos$ = this.service.getEquipos();
+        this.equipos$ = this.equiposService.getEquipos();
       },
       error: (e) => alert('Error al acumular: ' + (e?.message || ''))
     });
@@ -74,9 +78,9 @@ export class Puntajes {
     const ok = confirm('¿Poner en 0 el puntaje de TODOS los equipos?');
     if (!ok) return;
 
-    this.service.resetPuntajes().subscribe({
+    this.equiposService.resetPuntajes().subscribe({
       next: () => {
-        this.equipos$ = this.service.getEquipos();
+        this.equipos$ = this.equiposService.getEquipos();
         alert('Puntajes reiniciados a 0');
       },
       error: (e) => alert('Error al resetear puntajes: ' + (e?.message || ''))
@@ -87,7 +91,7 @@ export class Puntajes {
     const ok = confirm('¿Poner en 0 el puntaje de TODOS los acumulados?');
     if (!ok) return;
 
-    this.service.resetAcumulados().subscribe({
+    this.participantesService.resetAcumulados().subscribe({
       next: () => {         
         alert('Acumulados reiniciados a 0');
       },

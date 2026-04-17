@@ -87,4 +87,57 @@ export class ParticipantesService {
     );
   }
 
+  acumularPuntajesEnParticipantes() {
+    return forkJoin({
+      asign: from(
+        this.supabaseClient
+          .from('asignacion')
+          .select('participante, equipos!inner(pg, pe, pp, p32, po, pc, ps, pf)')
+      ),
+      parts: from(
+        this.supabaseClient
+          .from('participantes')
+          .select('id,nombre,acumulado')
+      )
+    }).pipe(
+      switchMap(({ asign, parts }: any) => {
+        if (asign.error) throw asign.error;
+        if (parts.error) throw parts.error;
+
+        const totales: Record<string, number> = {};
+        for (const row of asign.data ?? []) {
+          const nombre = (row.participante || '').trim();
+          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.p32 ?? 0) * 20 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pc ?? 0) * 30 + (row.equipos?.ps ?? 0) * 40 + (row.equipos?.pf ?? 0) * 50);
+          if (!nombre || !pts) continue;
+          totales[nombre] = (totales[nombre] ?? 0) + pts;
+        }
+
+        const updates = (parts.data ?? [])
+          .filter((p: any) => totales[p.nombre])
+          .map((p: any) =>
+            from(
+              this.supabaseClient
+                .from('participantes')
+                .update({ acumulado: Number(p.acumulado ?? 0) + totales[p.nombre] })
+                .eq('id', p.id)
+            )
+          );
+
+        if (!updates.length) return of({ ok: true, updated: 0 });
+        return forkJoin(updates).pipe(map(() => ({ ok: true, updated: updates.length })));
+      })
+    );
+  }
+
+  resetAcumulados(): Observable<any> {
+    return from(      
+      this.supabaseClient
+        .from('participantes')
+        .update({ 
+          acumulado: 0,
+        })
+        .not('id', 'is', null)
+    );
+  }
+
 }
