@@ -14,8 +14,8 @@ export interface Equipo {
   pc: number;
   ps: number;
   pf: number;
-  e32: string;
   grupo: string;
+  e32: string;
   of: string;
   cf: string;
   sf: string;

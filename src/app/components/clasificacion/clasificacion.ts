@@ -8,7 +8,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
-import { Service, Equipo } from '../../services/data';
+import { Service } from '../../services/data';
+import { EquiposService, Equipo } from '../../services/equipos';
 import { lastValueFrom } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
@@ -33,6 +34,9 @@ import { AuthService } from '../../services/auth/auth';
 })
 
 export class Clasificacion implements OnInit {
+
+  constructor(private equiposService: EquiposService) {}
+
   private svc = inject(Service);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -61,7 +65,7 @@ export class Clasificacion implements OnInit {
   async loadData() {
     this.loading.set(true);
     try {
-      const equipos = await lastValueFrom(this.svc.getEquipos());
+      const equipos = await lastValueFrom(this.equiposService.getEquipos());
       const sortedEquipos = [...equipos].sort((a, b) => {
         if (a.grupo === b.grupo) {
           return a.id.localeCompare(b.id);

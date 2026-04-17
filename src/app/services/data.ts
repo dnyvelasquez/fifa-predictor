@@ -519,51 +519,6 @@ export class Service {
     );
   }
 
-  createParticipante(nombre: string, numero: number) {
-    return from(
-      this.supabaseClient
-        .from('participantes')
-        .insert([{ nombre, numero }])
-        .select('id, nombre, numero')
-        .single()
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return data;
-      })
-    );
-  }
-
-  updateParticipante(id: string, patch: { nombre?: string; numero?: number }) {
-    return from(
-      this.supabaseClient
-        .from('participantes')
-        .update(patch)
-        .eq('id', id)
-        .select('id, nombre, numero')
-        .single()
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return data;
-      })
-    );
-  }
-
-  deleteParticipante(id: string) {
-    return from(
-      this.supabaseClient
-        .from('participantes')
-        .delete()
-        .eq('id', id)
-    ).pipe(
-      map(({ error }: any) => {
-        if (error) throw error;
-        return { ok: true };
-      })
-    );
-  }
-
   private hoyYYYYMMDD(): string {
     const d = new Date();
     const y = d.getFullYear();

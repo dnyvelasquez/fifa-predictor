@@ -8,10 +8,10 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Service } from '../../services/data';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
+import { ParticipantesService } from '../../services/participantes';
 
 type Row = { id: string; nombre: string; numero: number };
 
@@ -37,7 +37,7 @@ type Row = { id: string; nombre: string; numero: number };
 export class Participantes implements OnInit {
 
   private fb = inject(FormBuilder);
-  private svc = inject(Service);
+  private participantesService = inject(ParticipantesService);
   private authService = inject(AuthService);
   private router = inject(Router);
 
@@ -60,7 +60,7 @@ export class Participantes implements OnInit {
 
   load(): void {
     this.loading = true; this.errorMsg = this.okMsg = null;
-    this.svc.getParticipantes().subscribe({
+    this.participantesService.getParticipantes().subscribe({
       next: (rows) => { this.participantes = rows; },
       error: (e) => this.errorMsg = e?.message || 'No se pudieron cargar los participantes',
       complete: () => this.loading = false
@@ -75,7 +75,7 @@ export class Participantes implements OnInit {
     const { nombre, numero } = this.addForm.value;
     this.loading = true; this.errorMsg = this.okMsg = null;
 
-    this.svc.createParticipante(String(nombre), Number(numero)).subscribe({
+    this.participantesService.createParticipante(String(nombre), Number(numero)).subscribe({
       next: (row: Row) => {
         this.okMsg = 'Participante creado';
         this.addForm.reset();
@@ -115,7 +115,7 @@ export class Participantes implements OnInit {
     }
 
     this.loading = true; this.errorMsg = this.okMsg = null;
-    this.svc.updateParticipante(p.id, patch).subscribe({
+    this.participantesService.updateParticipante(p.id, patch).subscribe({
       next: (row: Row) => {
         this.okMsg = 'Participante actualizado';
         this.participantes = this.participantes
@@ -133,7 +133,7 @@ export class Participantes implements OnInit {
     if (!ok) return;
 
     this.loading = true; this.errorMsg = this.okMsg = null;
-    this.svc.deleteParticipante(p.id).subscribe({
+    this.participantesService.deleteParticipante(p.id).subscribe({
       next: () => {
         this.okMsg = 'Participante eliminado';
         this.participantes = this.participantes.filter(x => x.id !== p.id);
@@ -143,7 +143,6 @@ export class Participantes implements OnInit {
       complete: () => this.loading = false
     });
   }
-
 
 
   logout(): void {
