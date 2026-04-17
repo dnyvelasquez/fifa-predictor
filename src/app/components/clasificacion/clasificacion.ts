@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { Service, Equipo } from '../../services/data';
 import { lastValueFrom } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-clasificacion',
@@ -33,6 +34,7 @@ import { Router, RouterModule } from '@angular/router';
 
 export class Clasificacion implements OnInit {
   private svc = inject(Service);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   equipos = signal<Equipo[]>([]);
@@ -275,7 +277,7 @@ export class Clasificacion implements OnInit {
   }
 
   logout(): void {
-    this.svc.logout();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 

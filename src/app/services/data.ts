@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map, of, switchMap, forkJoin, catchError, throwError } from 'rxjs';
+import { Observable, from, map, of, switchMap, forkJoin } from 'rxjs';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 import { supabase } from '../core/supabase.client';
 
+//Opt
+import { SupabaseClientService } from './core/supabase-client';
+//
 
 export interface Participante {
   id: string;
@@ -68,15 +70,21 @@ export interface Asignacion {
 export class Service { 
 
   private supabase: SupabaseClient;
-  private FUNCTION_URL = environment.functionAuthUrl;
+  
+  constructor(
+    private http: HttpClient,
 
-  constructor(private http: HttpClient) {
+    // opt
+    private supabaseClient: SupabaseClientService,
+    //
+
+  ) {
     this.supabase = supabase;
   }
   
   getParticipantes(): Observable<Participante[]> {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('participantes')
         .select('*')
         .order('numero', { ascending: true })
@@ -90,7 +98,6 @@ export class Service {
       })
     );
   }
-
 
   getParticipantesConPuntaje(): Observable<(Participante & {
   })[]> {
@@ -116,24 +123,18 @@ export class Service {
         )
       ),
       map(list => {
-        // Ordenar por puntaje descendente
         const participantesOrdenados = list.sort((a, b) => b.puntaje - a.puntaje);
         
-        // Encontrar puntajes únicos (excluyendo 0)
         const puntajesUnicos = [...new Set(participantesOrdenados.map(p => p.puntaje))]
           .filter(p => p > 0)
           .sort((a, b) => b - a);
         
-        // El primer lugar es el puntaje más alto
         const primerPuntaje = puntajesUnicos.length > 0 ? puntajesUnicos[0] : 0;
         
-        // Verificar si hay empate en el primer lugar
         const hayEmpatePrimerLugar = participantesOrdenados.filter(p => p.puntaje === primerPuntaje).length > 1;
         
-        // El segundo lugar solo existe si NO hay empate en primer lugar y hay un segundo puntaje
         const segundoPuntaje = !hayEmpatePrimerLugar && puntajesUnicos.length > 1 ? puntajesUnicos[1] : 0;
         
-        // Añadir las propiedades 'max' y 'second' a cada participante
         return participantesOrdenados.map(p => ({
           ...p,
           max: p.puntaje === primerPuntaje && p.puntaje > 0,
@@ -143,59 +144,13 @@ export class Service {
     );
   }
 
-
-  createParticipante(nombre: string, numero: number) {
-    return from(
-      this.supabase
-        .from('participantes')
-        .insert([{ nombre, numero }])
-        .select('id, nombre, numero')
-        .single()
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return data;
-      })
-    );
-  }
-
-  updateParticipante(id: string, patch: { nombre?: string; numero?: number }) {
-    return from(
-      this.supabase
-        .from('participantes')
-        .update(patch)
-        .eq('id', id)
-        .select('id, nombre, numero')
-        .single()
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return data;
-      })
-    );
-  }
-
-  deleteParticipante(id: string) {
-    return from(
-      this.supabase
-        .from('participantes')
-        .delete()
-        .eq('id', id)
-    ).pipe(
-      map(({ error }: any) => {
-        if (error) throw error;
-        return { ok: true };
-      })
-    );
-  }
-
   getEquipos(): Observable<Equipo[]> {
     return forkJoin({
       equiposRes: from(
-        this.supabase.from('equipos').select('*').order('id', { ascending: true })
+        this.supabaseClient.from('equipos').select('*').order('id', { ascending: true })
       ),
       asignRes: from(
-        this.supabase.from('asignacion').select('equipo_id,participante')
+        this.supabaseClient.from('asignacion').select('equipo_id,participante')
       )
     }).pipe(
       map(({ equiposRes, asignRes }: any) => {
@@ -242,7 +197,7 @@ export class Service {
 
   getEquiposDe(nombre: string): Observable<Equipo[]> {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('asignacion')
         .select('equipo_id, participante, equipos!inner(id,nombre,pg,pe,pp,p32,po,pc,ps,pf,e32,grupo,of,cf,sf,gf,logo)')
         .eq('participante', nombre)
@@ -272,93 +227,12 @@ export class Service {
       })
     );
   }
-  
-  validarUsuario(): Observable<any> {
-    return from(this.supabase.auth.getSession()).pipe(
-      switchMap((sessionRes) => {
-        const token = sessionRes.data.session?.access_token;
-        if (!token) {
-          return of({ error: 'No hay sesión activa' });
-        }
-        return this.http.get(this.FUNCTION_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      }),
-      catchError(err => of({ error: err.message }))
-    );
-  }
-
-  getSession$() {
-    return from(this.supabase.auth.getSession()).pipe(
-      map(({ data }) => data.session ?? null)
-    );
-  }
-
-  isAuthenticated$() {
-    return this.getSession$().pipe(map((s) => !!s));
-  }
-
-  login(email: string, password: string): Observable<any> {
-    return from(
-      this.supabase.auth.signInWithPassword({ email, password })
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          return { error: error.message };
-        }
-        return { data: data.user };
-      })
-    );
-  }
-
-  logout(): Observable<any> {
-    return from(this.supabase.auth.signOut()).pipe(
-      map(({ error }) => {
-        if (error) {
-          return { error: error.message };
-        }
-        return { data: 'Sesión cerrada correctamente' };
-      })
-    );
-  }
-
-  private hoyYYYYMMDD(): string {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}/${m}/${day}`;
-  }
-
-  private toTs(fecha?: string, hora?: string): number {
-    if (!fecha) return Number.MAX_SAFE_INTEGER;
-    const [Y, M, D] = fecha.replace(/-/g, '/').split('/').map(n => parseInt(n, 10));
-    let h = 0, m = 0;
-    if (hora) {
-      const s = hora.trim().toUpperCase();
-      const m1 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
-      if (m1) {
-        h = parseInt(m1[1], 10);
-        m = parseInt(m1[2], 10);
-        const ap = m1[3];
-        if (ap === 'PM' && h < 12) h += 12;
-        if (ap === 'AM' && h === 12) h = 0;
-      } else {
-        const [hh, mm] = s.split(':');
-        h = parseInt(hh || '0', 10);
-        m = parseInt(mm || '0', 10);
-      }
-    }
-    return new Date(Y, (M || 1) - 1, D || 1, h, m, 0, 0).getTime();
-  }
 
   getJuegosSemanaActual(): Observable<Juego[]> {
     const hoy = this.hoyYYYYMMDD();
 
     const semanaId$ = from(
-      this.supabase
+      this.supabaseClient
         .from('semana')
         .select('id,inicio,fin')
         .lte('inicio', hoy)
@@ -372,7 +246,7 @@ export class Service {
       switchMap(id => {
         if (id !== null) return of(id);
         return from(
-          this.supabase
+          this.supabaseClient
             .from('semana')
             .select('id,inicio')
             .lte('inicio', hoy)
@@ -388,7 +262,7 @@ export class Service {
 
         return forkJoin({
           juegos: from(
-            this.supabase
+            this.supabaseClient
               .from('juegos')
               .select('*')
               .eq('semana', semId)
@@ -396,10 +270,10 @@ export class Service {
               .order('hora', { ascending: true })
           ).pipe(map((res: any) => res.data || [])),
           equipos: from(
-            this.supabase.from('equipos').select('*')
+            this.supabaseClient.from('equipos').select('*')
           ).pipe(map((res: any) => res.data || [])),
           asign: from(
-            this.supabase.from('asignacion').select('equipo_id,participante')
+            this.supabaseClient.from('asignacion').select('equipo_id,participante')
           ).pipe(map((res: any) => res.data || []))
         });
       }),
@@ -441,7 +315,7 @@ export class Service {
 
   getNextJuegoId() {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('juegos')
         .select('id')
         .order('id', { ascending: false })
@@ -457,7 +331,7 @@ export class Service {
 
   getSemanaIdPorFecha(fecha: string) {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('semana')
         .select('id,inicio,fin')
         .lte('inicio', fecha)
@@ -471,128 +345,13 @@ export class Service {
     );
   }
 
-  crearJuego(input: { visitante: string; local: string; fase: string; fecha: string; hora: string }) {
-    return forkJoin({
-      nextId: this.getNextJuegoId(),
-      semanaId: this.getSemanaIdPorFecha(input.fecha),
-    }).pipe(
-      switchMap(({ nextId, semanaId }) =>
-        from(
-          this.supabase
-            .from('juegos')
-            .insert([
-              {
-                id: nextId,
-                semana: semanaId, 
-                visitante: input.visitante,
-                local: input.local,
-                fase: input.fase,
-                fecha: input.fecha,
-                hora: input.hora,
-              },
-            ])
-            .select()
-        )
-      ),
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return data?.[0];
-      })
-    );
-  }
-
-  createUserAsAdmin(email: string, password: string, fullName?: string) {
-    return from(this.supabase.auth.getSession()).pipe(
-      switchMap(({ data }) => {
-        const token = data.session?.access_token;
-        if (!token) return throwError(() => new Error('No autenticado'));
-
-        return this.http.post(
-          environment.functionCreateUserUrl,
-          { email, password, fullName },
-          {
-            headers: new HttpHeaders({
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            })
-          }
-        );
-      })
-    );
-  }
-
-  listUsers(page = 1, perPage = 20, q = '') {
-    return from(this.supabase.auth.getSession()).pipe(
-      switchMap(({ data }) => {
-        const token = data.session?.access_token;
-        if (!token) return of({ error: 'No autenticado' });
-        const url = `${environment.functionListUsersUrl}?page=${page}&perPage=${perPage}&q=${encodeURIComponent(q)}`;
-        return this.callFn(url, { headers: { Authorization: `Bearer ${token}` } });
-      }),
-      catchError(err => of({ error: err?.message || 'Error listando usuarios' }))
-    );
-  }
-
-  deleteUser(userId: string) {
-    return from(this.supabase.auth.getSession()).pipe(
-      switchMap(({ data }) => {
-        const token = data.session?.access_token;
-        if (!token) return of({ error: 'No autenticado' });
-        return this.http.post(
-          environment.functionDeleteUserUrl,
-          { userId },
-          { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-        );
-      }),
-      catchError(err => of({ error: err?.message || 'Error eliminando usuario' }))
-    );
-  }
-
-
-
-
-  private callFn<T = any>(url: string, init?: RequestInit) {
-    return from(this.supabase.auth.getSession()).pipe(
-      switchMap(async ({ data }) => {
-        let token = data.session?.access_token;
-        if (!token) {
-          await new Promise(r => setTimeout(r, 200));
-          token = (await this.supabase.auth.getSession()).data.session?.access_token ?? undefined;
-        }
-        if (!token) throw new Error('No autenticado');
-
-        const headers = new Headers(init?.headers);
-        headers.set('Authorization', `Bearer ${token}`);
-        if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-
-        const res1 = await fetch(url, { ...init, headers });
-        if (res1.status !== 401) {
-          if (!res1.ok) throw new Error(await res1.text());
-          return (await res1.json()) as T;
-        }
-
-        const r = await this.supabase.auth.refreshSession();
-        const t2 = r.data.session?.access_token;
-        if (!t2) throw new Error('Sesión expirada');
-
-        const headers2 = new Headers(init?.headers);
-        headers2.set('Authorization', `Bearer ${t2}`);
-        if (!headers2.has('Content-Type')) headers2.set('Content-Type', 'application/json');
-
-        const res2 = await fetch(url, { ...init, headers: headers2 });
-        if (!res2.ok) throw new Error(await res2.text());
-        return (await res2.json()) as T;
-      })
-    );
-  }
-
   getSemanaActualId() {
     const hoy = this.hoyYYYYMMDD();
     return this.getSemanaIdPorFecha(hoy).pipe(
       switchMap(id => {
         if (id !== null) return of(id);
         return from(
-          this.supabase.from('semana')
+          this.supabaseClient.from('semana')
             .select('id,inicio')
             .lte('inicio', hoy)
             .order('inicio', { ascending: false })
@@ -604,16 +363,16 @@ export class Service {
 
   getExtremosSemanas() {
     return forkJoin({
-      min: from(this.supabase.from('semana').select('id').order('id', { ascending: true }).limit(1))
+      min: from(this.supabaseClient.from('semana').select('id').order('id', { ascending: true }).limit(1))
             .pipe(map((r: any) => r.data?.[0]?.id ?? null)),
-      max: from(this.supabase.from('semana').select('id').order('id', { ascending: false }).limit(1))
+      max: from(this.supabaseClient.from('semana').select('id').order('id', { ascending: false }).limit(1))
             .pipe(map((r: any) => r.data?.[0]?.id ?? null)),
     });
   }
 
   getSemanaAnteriorId(currentId: number) {
     return from(
-      this.supabase.from('semana')
+      this.supabaseClient.from('semana')
         .select('id')
         .lt('id', currentId)
         .order('id', { ascending: false })
@@ -623,7 +382,7 @@ export class Service {
 
   getSemanaSiguienteId(currentId: number) {
     return from(
-      this.supabase.from('semana')
+      this.supabaseClient.from('semana')
         .select('id')
         .gt('id', currentId)
         .order('id', { ascending: true })
@@ -634,16 +393,16 @@ export class Service {
   getJuegosPorSemanaId(semId: number): Observable<Juego[]> {
     return forkJoin({
       juegos: from(
-        this.supabase
+        this.supabaseClient
           .from('juegos')
           .select('*')
           .eq('semana', semId)
           .order('fecha', { ascending: true })
           .order('hora', { ascending: true })
       ).pipe(map((res: any) => res.data || [])),
-      equipos: from(this.supabase.from('equipos').select('*'))
+      equipos: from(this.supabaseClient.from('equipos').select('*'))
                 .pipe(map((res: any) => res.data || [])),
-      asign: from(this.supabase.from('asignacion').select('equipo_id,participante'))
+      asign: from(this.supabaseClient.from('asignacion').select('equipo_id,participante'))
               .pipe(map((res: any) => res.data || []))
     }).pipe(
       map(({ juegos, equipos, asign }: any) => {
@@ -681,161 +440,9 @@ export class Service {
     );
   }
 
-  assignEquipo(participanteNombre: string, grupo: string, equipoId: string | null) {
-    return this.getEquipoIdsPorDivision(grupo).pipe(
-      switchMap((idsMismaDivision) => {
-        const delParticipante$ = idsMismaDivision.length
-          ? from(
-              this.supabase
-                .from('asignacion')
-                .delete()
-                .eq('participante', participanteNombre)
-                .in('equipo_id', idsMismaDivision)
-            )
-          : of({});
-
-        if (!equipoId) {
-          return delParticipante$.pipe(
-            map(({ error }: any) => {
-              if (error) throw error;
-              return { ok: true };
-            })
-          );
-        }
-
-        const insert$ = from(
-          this.supabase
-            .from('asignacion')
-            .insert([{ equipo_id: equipoId, participante: participanteNombre }])
-            .select()
-        );
-
-        return delParticipante$.pipe(
-          switchMap(() => insert$),
-          map(({ error }: any) => {
-            if (error && error.code !== '23505') throw error;
-            return { ok: true };
-          })
-        );
-      })
-    );
-  }
-
-  resetAsignaciones() {
-    return from(this.supabase.from('asignacion').delete().neq('equipo_id', ''))
-      .pipe(
-        map(({ error }: any) => {
-          if (error) throw error;
-          return { ok: true };
-        })
-      );
-  }
-
-  actualizarPuntaje(id: string, pg: number, pe: number, pp: number, p32: number, po: number, pc: number, ps: number, pf: number): Observable<any> {
-    return from(
-      this.supabase
-        .from('equipos')
-        .update({ 
-          pg: pg,
-          pe: pe,
-          pp: pp,
-          po: po,
-          p32: p32,
-          pc: pc,
-          ps: ps,
-          pf: pf,
-        })
-        .eq('id', id)
-    );
-  }  
-
-  resetPuntajes(): Observable<any> {
-    return from(
-      this.supabase
-        .from('equipos')
-        .update({ 
-          pg: 0,
-          pe: 0,
-          pp: 0,
-          p32: 0,
-          po: 0,
-          pc: 0,
-          ps: 0,
-          pf: 0,
-        })
-        .not('id', 'is', null)
-    );
-  }
-
-  resetAcumulados(): Observable<any> {
-    return from(      
-      this.supabase
-        .from('participantes')
-        .update({ 
-          acumulado: 0,
-        })
-        .not('id', 'is', null)
-    );
-  }
-
-
-
-  acumularPuntajesEnParticipantes() {
-    return forkJoin({
-      asign: from(
-        this.supabase
-          .from('asignacion')
-          .select('participante, equipos!inner(pg, pe, pp, p32, po, pc, ps, pf)')
-      ),
-      parts: from(
-        this.supabase
-          .from('participantes')
-          .select('id,nombre,acumulado')
-      )
-    }).pipe(
-      switchMap(({ asign, parts }: any) => {
-        if (asign.error) throw asign.error;
-        if (parts.error) throw parts.error;
-
-        const totales: Record<string, number> = {};
-        for (const row of asign.data ?? []) {
-          const nombre = (row.participante || '').trim();
-          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.p32 ?? 0) * 20 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pc ?? 0) * 30 + (row.equipos?.ps ?? 0) * 40 + (row.equipos?.pf ?? 0) * 50);
-          if (!nombre || !pts) continue;
-          totales[nombre] = (totales[nombre] ?? 0) + pts;
-        }
-
-        const updates = (parts.data ?? [])
-          .filter((p: any) => totales[p.nombre])
-          .map((p: any) =>
-            from(
-              this.supabase
-                .from('participantes')
-                .update({ acumulado: Number(p.acumulado ?? 0) + totales[p.nombre] })
-                .eq('id', p.id)
-            )
-          );
-
-        if (!updates.length) return of({ ok: true, updated: 0 });
-        return forkJoin(updates).pipe(map(() => ({ ok: true, updated: updates.length })));
-      })
-    );
-  }
-
-  private getEquipoIdsPorDivision(grupo: string) {
-    return from(
-      this.supabase.from('equipos').select('id').eq('grupo', grupo)
-    ).pipe(
-      map(({ data, error }: any) => {
-        if (error) throw error;
-        return (data ?? []).map((r: any) => r.id as string);
-      })
-    );
-  }
-
   getAsignaciones() {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('asignacion')
         .select('id,equipo_id,participante')
         .order('equipo_id', { ascending: true })
@@ -850,17 +457,17 @@ export class Service {
   getAllJuegos(): Observable<Juego[]> {
     return forkJoin({
       juegos: from(
-        this.supabase
+        this.supabaseClient
           .from('juegos')
           .select('*')
           .order('fecha', { ascending: false })
           .order('hora', { ascending: false })
       ).pipe(map((res: any) => res.data || [])),
       equipos: from(
-        this.supabase.from('equipos').select('*')
+        this.supabaseClient.from('equipos').select('*')
       ).pipe(map((res: any) => res.data || [])),
       asign: from(
-        this.supabase.from('asignacion').select('equipo_id,participante')
+        this.supabaseClient.from('asignacion').select('equipo_id,participante')
       ).pipe(map((res: any) => res.data || []))
     }).pipe(
       map(({ juegos, equipos, asign }: any) => {
@@ -901,11 +508,266 @@ export class Service {
     );
   }
 
+  private getEquipoIdsPorDivision(grupo: string) {
+    return from(
+      this.supabaseClient.from('equipos').select('id').eq('grupo', grupo)
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        return (data ?? []).map((r: any) => r.id as string);
+      })
+    );
+  }
+
+  createParticipante(nombre: string, numero: number) {
+    return from(
+      this.supabaseClient
+        .from('participantes')
+        .insert([{ nombre, numero }])
+        .select('id, nombre, numero')
+        .single()
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        return data;
+      })
+    );
+  }
+
+  updateParticipante(id: string, patch: { nombre?: string; numero?: number }) {
+    return from(
+      this.supabaseClient
+        .from('participantes')
+        .update(patch)
+        .eq('id', id)
+        .select('id, nombre, numero')
+        .single()
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        return data;
+      })
+    );
+  }
+
+  deleteParticipante(id: string) {
+    return from(
+      this.supabaseClient
+        .from('participantes')
+        .delete()
+        .eq('id', id)
+    ).pipe(
+      map(({ error }: any) => {
+        if (error) throw error;
+        return { ok: true };
+      })
+    );
+  }
+
+  private hoyYYYYMMDD(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}/${m}/${day}`;
+  }
+
+  private toTs(fecha?: string, hora?: string): number {
+    if (!fecha) return Number.MAX_SAFE_INTEGER;
+    const [Y, M, D] = fecha.replace(/-/g, '/').split('/').map(n => parseInt(n, 10));
+    let h = 0, m = 0;
+    if (hora) {
+      const s = hora.trim().toUpperCase();
+      const m1 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+      if (m1) {
+        h = parseInt(m1[1], 10);
+        m = parseInt(m1[2], 10);
+        const ap = m1[3];
+        if (ap === 'PM' && h < 12) h += 12;
+        if (ap === 'AM' && h === 12) h = 0;
+      } else {
+        const [hh, mm] = s.split(':');
+        h = parseInt(hh || '0', 10);
+        m = parseInt(mm || '0', 10);
+      }
+    }
+    return new Date(Y, (M || 1) - 1, D || 1, h, m, 0, 0).getTime();
+  }
+
+  crearJuego(input: { visitante: string; local: string; fase: string; fecha: string; hora: string }) {
+    return forkJoin({
+      nextId: this.getNextJuegoId(),
+      semanaId: this.getSemanaIdPorFecha(input.fecha),
+    }).pipe(
+      switchMap(({ nextId, semanaId }) =>
+        from(
+          this.supabaseClient
+            .from('juegos')
+            .insert([
+              {
+                id: nextId,
+                semana: semanaId, 
+                visitante: input.visitante,
+                local: input.local,
+                fase: input.fase,
+                fecha: input.fecha,
+                hora: input.hora,
+              },
+            ])
+            .select()
+        )
+      ),
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        return data?.[0];
+      })
+    );
+  }
+
+  assignEquipo(participanteNombre: string, grupo: string, equipoId: string | null) {
+    return this.getEquipoIdsPorDivision(grupo).pipe(
+      switchMap((idsMismaDivision) => {
+        const delParticipante$ = idsMismaDivision.length
+          ? from(
+              this.supabaseClient
+                .from('asignacion')
+                .delete()
+                .eq('participante', participanteNombre)
+                .in('equipo_id', idsMismaDivision)
+            )
+          : of({});
+
+        if (!equipoId) {
+          return delParticipante$.pipe(
+            map(({ error }: any) => {
+              if (error) throw error;
+              return { ok: true };
+            })
+          );
+        }
+
+        const insert$ = from(
+          this.supabaseClient
+            .from('asignacion')
+            .insert([{ equipo_id: equipoId, participante: participanteNombre }])
+            .select()
+        );
+
+        return delParticipante$.pipe(
+          switchMap(() => insert$),
+          map(({ error }: any) => {
+            if (error && error.code !== '23505') throw error;
+            return { ok: true };
+          })
+        );
+      })
+    );
+  }
+
+  resetAsignaciones() {
+    return from(this.supabaseClient.from('asignacion').delete().neq('equipo_id', ''))
+      .pipe(
+        map(({ error }: any) => {
+          if (error) throw error;
+          return { ok: true };
+        })
+      );
+  }
+
+  actualizarPuntaje(id: string, pg: number, pe: number, pp: number, p32: number, po: number, pc: number, ps: number, pf: number): Observable<any> {
+    return from(
+      this.supabaseClient
+        .from('equipos')
+        .update({ 
+          pg: pg,
+          pe: pe,
+          pp: pp,
+          po: po,
+          p32: p32,
+          pc: pc,
+          ps: ps,
+          pf: pf,
+        })
+        .eq('id', id)
+    );
+  }  
+
+  resetPuntajes(): Observable<any> {
+    return from(
+      this.supabaseClient
+        .from('equipos')
+        .update({ 
+          pg: 0,
+          pe: 0,
+          pp: 0,
+          p32: 0,
+          po: 0,
+          pc: 0,
+          ps: 0,
+          pf: 0,
+        })
+        .not('id', 'is', null)
+    );
+  }
+
+  resetAcumulados(): Observable<any> {
+    return from(      
+      this.supabaseClient
+        .from('participantes')
+        .update({ 
+          acumulado: 0,
+        })
+        .not('id', 'is', null)
+    );
+  }
+
+  acumularPuntajesEnParticipantes() {
+    return forkJoin({
+      asign: from(
+        this.supabaseClient
+          .from('asignacion')
+          .select('participante, equipos!inner(pg, pe, pp, p32, po, pc, ps, pf)')
+      ),
+      parts: from(
+        this.supabaseClient
+          .from('participantes')
+          .select('id,nombre,acumulado')
+      )
+    }).pipe(
+      switchMap(({ asign, parts }: any) => {
+        if (asign.error) throw asign.error;
+        if (parts.error) throw parts.error;
+
+        const totales: Record<string, number> = {};
+        for (const row of asign.data ?? []) {
+          const nombre = (row.participante || '').trim();
+          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.p32 ?? 0) * 20 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pc ?? 0) * 30 + (row.equipos?.ps ?? 0) * 40 + (row.equipos?.pf ?? 0) * 50);
+          if (!nombre || !pts) continue;
+          totales[nombre] = (totales[nombre] ?? 0) + pts;
+        }
+
+        const updates = (parts.data ?? [])
+          .filter((p: any) => totales[p.nombre])
+          .map((p: any) =>
+            from(
+              this.supabaseClient
+                .from('participantes')
+                .update({ acumulado: Number(p.acumulado ?? 0) + totales[p.nombre] })
+                .eq('id', p.id)
+            )
+          );
+
+        if (!updates.length) return of({ ok: true, updated: 0 });
+        return forkJoin(updates).pipe(map(() => ({ ok: true, updated: updates.length })));
+      })
+    );
+  }
+
   actualizarJuego(juego: Juego): Observable<Juego> {
     const { id, lscore, vscore, ...resto } = juego;
     
     return from(
-      this.supabase
+      this.supabaseClient
         .from('juegos')
         .update({ 
           lscore: lscore || 0,
@@ -924,7 +786,7 @@ export class Service {
 
   eliminarJuego(id: string): Observable<void> {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('juegos')
         .delete()
         .eq('id', id)
@@ -938,7 +800,7 @@ export class Service {
 
   actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
     return from(
-      this.supabase
+      this.supabaseClient
         .from('juegos')
         .update({ 
           lscore: lscore || 0,
@@ -955,43 +817,33 @@ export class Service {
     );
   }  
 
-// Agregar estos métodos al service existente
+  deleteParticipanteAsignaciones(participanteNombre: string): Observable<any> {
+    return from(
+      this.supabaseClient
+        .from('asignacion')
+        .delete()
+        .eq('participante', participanteNombre)
+    ).pipe(
+      map(({ error }: any) => {
+        if (error) throw error;
+        return { ok: true };
+      })
+    );
+  }
 
-deleteParticipanteAsignaciones(participanteNombre: string): Observable<any> {
-  return from(
-    this.supabase
-      .from('asignacion')
-      .delete()
-      .eq('participante', participanteNombre)
-  ).pipe(
-    map(({ error }: any) => {
-      if (error) throw error;
-      return { ok: true };
-    })
-  );
-}
-
-assignEquipoSimple(participanteNombre: string, equipoId: string): Observable<any> {
-  return from(
-    this.supabase
-      .from('asignacion')
-      .insert([{ equipo_id: equipoId, participante: participanteNombre }])
-      .select()
-  ).pipe(
-    map(({ error }: any) => {
-      if (error && error.code !== '23505') throw error;
-      return { ok: true };
-    })
-  );
-}
+  assignEquipoSimple(participanteNombre: string, equipoId: string): Observable<any> {
+    return from(
+      this.supabaseClient
+        .from('asignacion')
+        .insert([{ equipo_id: equipoId, participante: participanteNombre }])
+        .select()
+    ).pipe(
+      map(({ error }: any) => {
+        if (error && error.code !== '23505') throw error;
+        return { ok: true };
+      })
+    );
+  }
 
 }
-
-
-
-
-
-
-
-
 

@@ -7,8 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Service } from '../../services/data';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-borrar-usuario',
@@ -29,10 +29,10 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class BorrarUsuario implements OnInit {
 
-  private svc = inject(Service);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
-  constructor(private service: Service, private router: Router) {}
+  constructor(private router: Router) {}
 
 
   loading = false;
@@ -54,7 +54,7 @@ export class BorrarUsuario implements OnInit {
   load(page = this.page, q = this.q) {
     this.loading = true;
     this.errorMsg = this.okMsg = null;
-    this.svc.listUsers(page, this.perPage, q).subscribe({
+    this.authService.listUsers().subscribe({
       next: (res: any) => {
         if (res?.error) { this.errorMsg = res.error; return; }
         this.users = res.users ?? [];
@@ -80,7 +80,7 @@ export class BorrarUsuario implements OnInit {
     if (!ok) return;
 
     this.loading = true; this.errorMsg = this.okMsg = null;
-    this.svc.deleteUser(u.id).subscribe({
+    this.authService.deleteUser(u.id).subscribe({
       next: (r: any) => {
         if (r?.error) { this.errorMsg = r.error; return; }
         this.okMsg = 'Usuario eliminado.';
@@ -93,7 +93,7 @@ export class BorrarUsuario implements OnInit {
   }
   
   logout(): void {
-    this.service.logout();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }  
 

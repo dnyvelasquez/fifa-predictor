@@ -9,6 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Service, Participante, Equipo } from '../../services/data';
 import { forkJoin } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth/auth';
 
 type AsignacionRow = { id?: string; equipo_id: string; participante: string };
 
@@ -30,6 +31,7 @@ type AsignacionRow = { id?: string; equipo_id: string; participante: string };
 })
 export class Asignacion implements OnInit {
   private svc = inject(Service);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   loading = signal(true);
@@ -168,7 +170,7 @@ export class Asignacion implements OnInit {
   }
 
   logout(): void {
-    this.svc.logout();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 }

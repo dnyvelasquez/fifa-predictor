@@ -10,7 +10,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Service, Equipo } from '../../services/data';
+import { Equipo, Service } from '../../services/data';
+import { AuthService } from '../../services/auth/auth';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -38,7 +39,11 @@ export class Puntajes {
 
   equipos$: Observable<Equipo[]>;
 
-  constructor(private service: Service, private router: Router) {
+  constructor(
+    private authService: AuthService, 
+    private service: Service,
+    private router: Router 
+  ) {
 
     this.equipos$ = this.service.getEquipos(); 
 
@@ -52,6 +57,19 @@ export class Puntajes {
       });
   }
   
+  acumular() {
+    const ok = confirm('¿Sumar el puntaje de cada equipo al "acumulado" de su participante?');
+    if (!ok) return;
+
+    this.service.acumularPuntajesEnParticipantes().subscribe({
+      next: (r: any) => {
+        alert(`Acumulado actualizado (${r?.updated ?? 0} participante(s)).`);
+        this.equipos$ = this.service.getEquipos();
+      },
+      error: (e) => alert('Error al acumular: ' + (e?.message || ''))
+    });
+  }
+
   resetPuntajes() {
     const ok = confirm('¿Poner en 0 el puntaje de TODOS los equipos?');
     if (!ok) return;
@@ -77,23 +95,9 @@ export class Puntajes {
     });
   }
 
-
   logout(): void {
-    this.service.logout();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }  
-
-  acumular() {
-    const ok = confirm('¿Sumar el puntaje de cada equipo al "acumulado" de su participante?');
-    if (!ok) return;
-
-    this.service.acumularPuntajesEnParticipantes().subscribe({
-      next: (r: any) => {
-        alert(`Acumulado actualizado (${r?.updated ?? 0} participante(s)).`);
-        this.equipos$ = this.service.getEquipos();
-      },
-      error: (e) => alert('Error al acumular: ' + (e?.message || ''))
-    });
-  }
 
 }

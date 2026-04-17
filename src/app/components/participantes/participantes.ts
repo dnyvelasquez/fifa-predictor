@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Service } from '../../services/data';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth/auth';
 
 type Row = { id: string; nombre: string; numero: number };
 
@@ -37,6 +38,7 @@ export class Participantes implements OnInit {
 
   private fb = inject(FormBuilder);
   private svc = inject(Service);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   loading = false;
@@ -145,7 +147,7 @@ export class Participantes implements OnInit {
 
 
   logout(): void {
-    this.svc.logout();
+    this.authService.logout();
     this.router.navigate(['/login']);
   }  
 

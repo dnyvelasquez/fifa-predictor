@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,16 +6,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors  } from '@angular/forms';
+import { FormsModule, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Service } from '../../services/data';
-
-function samePass(ctrl: AbstractControl): ValidationErrors | null {
-  const p1 = ctrl.get('password')?.value;
-  const p2 = ctrl.get('confirm')?.value;
-  if (!p1 || !p2) return null;
-  return p1 === p2 ? null : { mismatch: true };
-}
+import { Subject, takeUntil } from 'rxjs';
+import { AuthService } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-nuevo-usuario',
@@ -35,11 +29,11 @@ function samePass(ctrl: AbstractControl): ValidationErrors | null {
   templateUrl: './nuevo-usuario.html',
   styleUrls: ['./nuevo-usuario.css']
 })
-export class NuevoUsuario {
-
+export class NuevoUsuario implements OnDestroy {
   private fb = inject(FormBuilder);
-  private service = inject(Service); 
+  private authService = inject(AuthService); 
   private router = inject(Router);
+  private destroy$ = new Subject<void>();
 
   loading = false;
   errorMsg: string | null = null;
@@ -47,22 +41,29 @@ export class NuevoUsuario {
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
   });
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   get f() { return this.form.controls; }
 
-  submit() {
+  submit(): void {
     if (this.form.invalid || this.loading) {
       this.form.markAllAsTouched();
       return;
     }
+    
     this.loading = true;
-    this.errorMsg = this.okMsg = null;
+    this.errorMsg = null;
+    this.okMsg = null;
 
     const { email, password } = this.form.value;
 
-    this.service.createUserAsAdmin(String(email), String(password))
+    this.authService.createUser(String(email), String(password))
       .subscribe({
         next: (res: any) => {
           if (res?.error) { 
@@ -76,10 +77,16 @@ export class NuevoUsuario {
       });
   }
 
-
   logout(): void {
-    this.service.logout();
-    this.router.navigate(['/login']);
-  }  
-
+    this.authService.logout()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/login'], { replaceUrl: true });
+        },
+        error: () => {
+          this.router.navigate(['/login'], { replaceUrl: true });
+        }
+      });
+  }
 }
