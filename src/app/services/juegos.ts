@@ -208,33 +208,61 @@ export class JuegosService {
       equipos: from(this.supabaseClient.from('equipos').select('*'))
                 .pipe(map((res: any) => res.data || [])),
       asign: from(this.supabaseClient.from('asignacion').select('equipo_id,participante'))
-              .pipe(map((res: any) => res.data || []))
+                .pipe(map((res: any) => res.data || []))
     }).pipe(
       map(({ juegos, equipos, asign }: any) => {
         const byNombre: Record<string, any> = {};
         const byId: Record<string, any> = {};
-        for (const e of equipos) { byNombre[e.nombre] = e; byId[e.id] = e; }
+        for (const e of equipos) { 
+          byNombre[e.nombre] = e; 
+          byId[e.id] = e; 
+        }
 
-        const participantesPorEquipoId: Record<string, string[]> = {};
+        const participantesPorEquipoId: Record<string, Set<string>> = {};
         for (const a of asign as Array<{equipo_id: string; participante: string}>) {
           if (!a?.equipo_id) continue;
           const p = (a.participante || '').trim();
           if (!p) continue;
-          (participantesPorEquipoId[a.equipo_id] ??= []).push(p);
+          
+          if (!participantesPorEquipoId[a.equipo_id]) {
+            participantesPorEquipoId[a.equipo_id] = new Set();
+          }
+          participantesPorEquipoId[a.equipo_id].add(p);
         }
 
         const enrich = (j: any): Juego => {
           const v = byNombre[j.visitante];
           const l = byNombre[j.local];
-          const listV = v ? (participantesPorEquipoId[v.id] ?? []) : [];
-          const listL = l ? (participantesPorEquipoId[l.id] ?? []) : [];
+          
+          let participantesV: string[] = [];
+          let participantesL: string[] = [];
+          
+          if (v) {
+            participantesV = participantesPorEquipoId[v.id] 
+              ? Array.from(participantesPorEquipoId[v.id]) 
+              : [];
+          }
+          
+          if (l) {
+            participantesL = participantesPorEquipoId[l.id] 
+              ? Array.from(participantesPorEquipoId[l.id]) 
+              : [];
+          }
+
+          const mostrarV = participantesV.length > 2 
+            ? `${participantesV.slice(0, 2).join(', ')} +${participantesV.length - 2}` 
+            : participantesV.join(', ');
+            
+          const mostrarL = participantesL.length > 2 
+            ? `${participantesL.slice(0, 2).join(', ')} +${participantesL.length - 2}` 
+            : participantesL.join(', ');
 
           return {
             ...j,
             logoVisitante: v?.logo || '',
             logoLocal:     l?.logo || '',
-            participanteVisitante: listV.join(' / '),
-            participanteLocal:     listL.join(' / '),
+            participanteVisitante: mostrarV || 'No asignado',
+            participanteLocal:     mostrarL || 'No asignado',
           } as Juego;
         };
 
