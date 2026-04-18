@@ -1,7 +1,7 @@
 <div class="home-container">
   <mat-card class="welcome-card">
     <div class="header">
-      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo" loading="lazy">
       <h1>FIFA Predictor 2026</h1>
       <h1> ⚽</h1>
     </div>
@@ -10,146 +10,86 @@
 
     <h2 class="subtitle">Clasificación de Participantes</h2>
 
-    <div class="one-column-view">
-      <div class="participants-list">
-        @for (p of (participantes$ | async) ?? []; track p.nombre; let i = $index) {
-          <div class="participant-row" 
-               [ngClass]="{
-                 'primer-lugar': p.max,
-                 'segundo-lugar': p.second,
-                 'otro-lugar': !p.max && !p.second,
-               }"
-               (click)="abrirDetalleParticipante(p)">
-            <div class="participant-info-simple">
-              <div class="participant-name with-icon">
-                <span>{{i + 1}}. {{p.nombre}}</span>
-                @if (p.puntaje !== 0) {
-                  @if (p.max) {
-                    <mat-icon class="icono-trofeo">emoji_events</mat-icon>
-                  }
-                  @else if (p.second) {
-                    <mat-icon class="icono-medalla">military_tech</mat-icon>
-                  }
-                }
-              </div>
-              <div class="participant-score-chip">
-                {{p.puntaje}}
-              </div>
-            </div>
-          </div>
-        }
+    @if (loading$ | async) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando participantes...</p>
       </div>
-    </div>
+    }
 
-    <div class="two-columns-view">
-      <div class="participants-grid">
-        @for (p of (participantes$ | async) ?? []; track p.nombre; let i = $index) {
-          <div class="participant-card" 
-               [ngClass]="{
-                 'primer-lugar': p.max,
-                 'segundo-lugar': p.second,
-                 'otro-lugar': !p.max && !p.second,
-               }"
-               (click)="abrirDetalleParticipante(p)">
-            <div class="participant-info">
-              <div class="participant-name with-icon">
-                <span>{{i + 1}}. {{p.nombre}}</span>
-                @if (p.puntaje !== 0) {
-                  @if (p.max) {
-                    <mat-icon class="icono-trofeo">emoji_events</mat-icon>
-                  }
-                  @else if (p.second) {
-                    <mat-icon class="icono-medalla">military_tech</mat-icon>
-                  }
-                }
-              </div>
-              <div class="participant-score">
-                {{p.puntaje}}
-              </div>
-            </div>
-          </div>
-        }
+    @if (error$ | async; as error) {
+      <div class="error-container">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-button (click)="refreshData()">Reintentar</button>
       </div>
-    </div>
+    }
 
+    @if ((participantes$ | async); as participantes) {
+      @if (participantes.length === 0) {
+        <div class="empty-container">
+          <mat-icon>people_outline</mat-icon>
+          <p>No hay participantes registrados</p>
+        </div>
+      } @else {
+        <div class="one-column-view">
+          <div class="participants-list">
+            @for (p of participantes; track p.id; let i = $index) {
+              <div class="participant-row" 
+                   [class.primer-lugar]="p.max"
+                   [class.segundo-lugar]="p.second"
+                   [class.otro-lugar]="!p.max && !p.second"
+                   (click)="abrirDetalleParticipante(p)">
+                <div class="participant-info-simple">
+                  <div class="participant-name with-icon">
+                    <span>{{i + 1}}. {{p.nombre}}</span>
+                    @if (p.puntaje !== 0) {
+                      @if (p.max) {
+                        <mat-icon class="icono-trofeo" aria-label="Primer lugar">emoji_events</mat-icon>
+                      }
+                      @else if (p.second) {
+                        <mat-icon class="icono-medalla" aria-label="Segundo lugar">military_tech</mat-icon>
+                      }
+                    }
+                  </div>
+                  <div class="participant-score-chip">
+                    {{p.puntaje}}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="two-columns-view">
+          <div class="participants-grid">
+            @for (p of participantes; track p.id; let i = $index) {
+              <div class="participant-card" 
+                   [class.primer-lugar]="p.max"
+                   [class.segundo-lugar]="p.second"
+                   [class.otro-lugar]="!p.max && !p.second"
+                   (click)="abrirDetalleParticipante(p)">
+                <div class="participant-info">
+                  <div class="participant-name with-icon">
+                    <span>{{i + 1}}. {{p.nombre}}</span>
+                    @if (p.puntaje !== 0) {
+                      @if (p.max) {
+                        <mat-icon class="icono-trofeo" aria-label="Primer lugar">emoji_events</mat-icon>
+                      }
+                      @else if (p.second) {
+                        <mat-icon class="icono-medalla" aria-label="Segundo lugar">military_tech</mat-icon>
+                      }
+                    }
+                  </div>
+                  <div class="participant-score">
+                    {{p.puntaje}}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
   </mat-card>
 </div>
-
-
-
-
-
-<!-- <div class="home-container">
-  <mat-card class="welcome-card">
-    <div class="header">
-      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
-      <h1>FIFA Predictor 2026</h1>
-      <h1> ⚽</h1>
-    </div>
-    <h2 class="subtitle">Copa Mundial de la FIFA 2026</h2>
-    <mat-divider></mat-divider>
-
-    <h2 class="subtitle">Clasificación de Participantes</h2>
-
-    <div class="one-column-view">
-      <div class="participants-list">
-        <div class="participant-row" 
-             *ngFor="let p of (participantes$ | async) ?? []; let i = index"
-             [ngClass]="{
-               'primer-lugar': p.max,
-               'segundo-lugar': p.second,
-               'otro-lugar': !p.max && !p.second,
-             }"
-             (click)="abrirDetalleParticipante(p)">
-          <div class="participant-info-simple">
-            <div class="participant-name with-icon">
-              <span>{{i + 1}}. {{p.nombre}}</span>
-              @if (p.puntaje !== 0) {
-                @if (p.max) {
-                  <mat-icon class="icono-trofeo">emoji_events</mat-icon>
-                }
-                @else if (p.second) {
-                  <mat-icon class="icono-medalla">military_tech</mat-icon>
-                }
-              }
-            </div>
-            <div class="participant-score-chip">
-              {{p.puntaje}}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="two-columns-view">
-      <div class="participants-grid">
-        <div class="participant-card" 
-             *ngFor="let p of (participantes$ | async) ?? []; let i = index"
-             [ngClass]="{
-               'primer-lugar': p.max,
-               'segundo-lugar': p.second,
-               'otro-lugar': !p.max && !p.second,
-             }"
-             (click)="abrirDetalleParticipante(p)">
-          <div class="participant-info">
-            <div class="participant-name with-icon">
-              <span>{{i + 1}}. {{p.nombre}}</span>
-              @if (p.puntaje !== 0) {
-                @if (p.max) {
-                  <mat-icon class="icono-trofeo">emoji_events</mat-icon>
-                }
-                @else if (p.second) {
-                  <mat-icon class="icono-medalla">military_tech</mat-icon>
-                }
-              }
-            </div>
-            <div class="participant-score">
-              {{p.puntaje}}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </mat-card>
-</div> -->
