@@ -42,21 +42,25 @@ export class ParticipantesService {
     );
   }
   
-  getParticipantesConPuntaje(): Observable<(Participante & {
-  })[]> {
+  getParticipantesConPuntaje(): Observable<(Participante & {})[]> {
     return this.getParticipantes().pipe(
       switchMap(participantes =>
         forkJoin(
           participantes.map(p =>
             this.equiposService.getEquiposDe(p.nombre).pipe(
               map(equipos => {
-                const puntajeEquipos = equipos.reduce((acc, eq) => 
+                // Eliminar equipos duplicados por nombre
+                const equiposUnicos = equipos.filter((eq, index, self) => 
+                  index === self.findIndex(e => e.nombre === eq.nombre)
+                );
+                
+                const puntajeEquipos = equiposUnicos.reduce((acc, eq) => 
                   acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + 
                   (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
                 const acumulado = p.acumulado ?? 0;
                 return { 
                   ...p, 
-                  equipos, 
+                  equipos: equiposUnicos, 
                   puntajeEquipos, 
                   puntaje: puntajeEquipos + acumulado 
                 };
@@ -67,15 +71,11 @@ export class ParticipantesService {
       ),
       map(list => {
         const participantesOrdenados = list.sort((a, b) => b.puntaje - a.puntaje);
-        
         const puntajesUnicos = [...new Set(participantesOrdenados.map(p => p.puntaje))]
           .filter(p => p > 0)
           .sort((a, b) => b - a);
-        
         const primerPuntaje = puntajesUnicos.length > 0 ? puntajesUnicos[0] : 0;
-        
         const hayEmpatePrimerLugar = participantesOrdenados.filter(p => p.puntaje === primerPuntaje).length > 1;
-        
         const segundoPuntaje = !hayEmpatePrimerLugar && puntajesUnicos.length > 1 ? puntajesUnicos[1] : 0;
         
         return participantesOrdenados.map(p => ({
@@ -86,7 +86,7 @@ export class ParticipantesService {
       })
     );
   }
-
+  
   createParticipante(nombre: string, numero: number) {
     return from(
       this.supabaseClient

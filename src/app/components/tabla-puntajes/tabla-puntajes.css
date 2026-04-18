@@ -253,3 +253,58 @@
   }
 }
 
+.loading-overlay,
+.error-overlay,
+.empty-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  background-color: white;
+  border-radius: 10px;
+  margin: 20px 0;
+}
+
+.loading-overlay p,
+.error-overlay p,
+.empty-overlay p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.error-overlay {
+  color: #d32f2f;
+}
+
+.error-overlay mat-icon {
+  color: #d32f2f;
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.empty-overlay mat-icon {
+  color: #999;
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabla-puntajes-table,
+  .equipo-item {
+    transition: none;
+  }
+  
+  .tabla-puntajes-table:hover,
+  .equipo-item:hover {
+    transform: none;
+  }
+}
+
+img[loading="lazy"] {
+  content-visibility: auto;
+}
