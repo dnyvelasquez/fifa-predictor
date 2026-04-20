@@ -1,6 +1,65 @@
 <div class="equipos-container">
   <mat-card class="equipos-card">
     <div class="header">
+      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo" loading="lazy">
+      <mat-card-title class="equipos-title">Equipos en Competición</mat-card-title>
+      <h1> ⚽</h1>
+      <mat-divider></mat-divider>
+    </div>
+
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando equipos...</p>
+      </div>
+    } @else if (error) {
+      <div class="error-container">
+        <mat-icon>error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        @for (e of equipos; track e.id) {
+          <div class="grid-row">
+            <div>
+              <img [src]="e.logo" [alt]="e.nombre" class="equipo-logo" loading="lazy">
+            </div>
+            <div class="equipo">
+              <span>{{ e.nombre }}</span> 
+              @if (e.pg !== 0 || e.pe !== 0 || e.pp !== 0) {
+                <span class="score">{{ e.pg }}-{{ e.pe }}-{{ e.pp }}</span>
+              }   
+            </div>
+            <div class="chip-grupo">
+              Grupo {{ e.grupo }}
+            </div>
+            <div class="punt-part">
+              <div class="puntaje">
+                {{ calcularPuntajeEquipo(e) }} puntos
+              </div>
+              <div class="participante">
+                {{ e.participante }}
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-container">
+            <mat-icon>sports_soccer</mat-icon>
+            <p>No hay equipos con participantes asignados</p>
+          </div>
+        }
+      </div>
+    }
+  </mat-card>
+</div>
+
+
+
+
+
+<!-- <div class="equipos-container">
+  <mat-card class="equipos-card">
+    <div class="header">
       <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
       <mat-card-title class="equipos-title">Equipos en Competición</mat-card-title>
       <h1> ⚽</h1>
@@ -46,4 +105,4 @@
 </div>
 
 
-
+ -->
