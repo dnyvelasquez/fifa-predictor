@@ -13,6 +13,7 @@ import { EquiposService, Equipo } from '../../services/equipos';
 import { lastValueFrom } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
+import { SupabaseClientService } from '../../services/core/supabase-client';
 
 @Component({
   selector: 'app-clasificacion',
@@ -37,11 +38,12 @@ export class Clasificacion implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private supabaseClientService: SupabaseClientService,
     private equiposService: EquiposService,
     private router: Router
   ) {}
 
-  private svc = inject(Service);
+  //private svc = inject(Service);
   
   equipos = signal<Equipo[]>([]);
   loading = signal(false);
@@ -223,7 +225,7 @@ export class Clasificacion implements OnInit {
         updateData.gf = '';
       }
 
-      const { error } = await this.svc['supabase']
+      const { error } = await this.supabaseClientService['supabase']
         .from('equipos')
         .update(updateData)
         .eq('id', equipo.id);
@@ -255,7 +257,7 @@ export class Clasificacion implements OnInit {
     this.saving.set(true);
     try {
       const updates = this.equipos().map(equipo => 
-        this.svc['supabase']
+        this.supabaseClientService['supabase']
           .from('equipos')
           .update({ e32: '', of: '', cf: '', sf: '', gf: '' })
           .eq('id', equipo.id)
