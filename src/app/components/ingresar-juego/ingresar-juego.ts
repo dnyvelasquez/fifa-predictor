@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -13,7 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
-import { firstValueFrom } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
 import { JuegosService, Juego } from '../../services/juegos';
@@ -43,22 +46,25 @@ function distintos(control: AbstractControl): ValidationErrors | null {
     MatIconModule,
     MatDividerModule,
     MatMenuModule,
-    MatTableModule
+    MatTableModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   templateUrl: './ingresar-juego.html',
   styleUrls: ['./ingresar-juego.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IngresarJuego implements OnInit {
+export class IngresarJuego implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private juegosService = inject(JuegosService);
+  private equiposService = inject(EquiposService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
-  constructor(
-    private authService: AuthService,
-    private juegosService: JuegosService,
-    private equiposService: EquiposService,    
-    private router: Router
-  ) {}
-
-  fases = [
+  readonly fases = [
     'Fase de Grupos',
     'Eliminatoria 32',
     'Octavos de Final',
@@ -70,8 +76,9 @@ export class IngresarJuego implements OnInit {
   equipos: Equipo[] = [];
   juegos: Juego[] = [];
   loading = false;
+  saving = false;
   errorMsg: string | null = null;
-  displayedColumns: string[] = ['local', 'visitante', 'fase', 'fecha', 'hora', 'lscore', 'vscore', 'acciones'];
+  readonly displayedColumns: string[] = ['local', 'visitante', 'fase', 'fecha', 'hora', 'lscore', 'vscore', 'acciones'];
 
   form = this.fb.group({
     visitante: ['', Validators.required],
@@ -82,37 +89,63 @@ export class IngresarJuego implements OnInit {
   }, { validators: [distintos] });
 
   ngOnInit(): void {
+    this.loading = true; 
     this.cargarEquipos();
     this.cargarJuegos();
+    
+    this.form.valueChanges.pipe(
+      debounceTime(3000),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.errorMsg = null;
+      this.cdr.detectChanges();
+    });
   }
 
   cargarEquipos(): void {
-    this.equiposService.getEquipos().subscribe({
-      next: (eqs) => {
-        this.equipos = eqs ?? [];
-      },
-      error: (e) => {
-        this.errorMsg = e?.message || 'No fue posible cargar equipos';
-      }
+    this.equiposService.getEquipos().pipe(
+      catchError(error => {
+        this.showMessage('No fue posible cargar equipos', 'error');
+        return of([]);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(equipos => {
+      this.equipos = equipos.filter(e => {
+        const participante = (e.participante ?? '').trim();
+        return participante && participante.toLowerCase() !== 'no asignado';
+      });
+      this.checkLoadingComplete();
+      this.cdr.detectChanges();
     });
   }
 
   cargarJuegos(): void {
-    this.juegosService.getAllJuegos().subscribe({
-      next: (juegos) => {
-        this.juegos = juegos ?? [];
-      },
-      error: (e) => {
-        this.errorMsg = e?.message || 'No fue posible cargar los juegos';
-      }
+    this.juegosService.getAllJuegos().pipe(
+      catchError(error => {
+        this.showMessage('No fue posible cargar los juegos', 'error');
+        return of([]);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(juegos => {
+      this.juegos = juegos;
+      this.checkLoadingComplete();
+      this.cdr.detectChanges();
     });
+  }
+
+  private checkLoadingComplete(): void {
+    setTimeout(() => {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }, 1000);
   }
 
   get f() { 
     return this.form.controls; 
   }
 
-  onFechaTyped(e: Event) {
+  onFechaTyped(e: Event): void {
     const v = (e.target as HTMLInputElement).value;
     const d = this.parseYYYYMMDD(v);
     if (d) {
@@ -120,18 +153,18 @@ export class IngresarJuego implements OnInit {
     }
   }
 
-  onFechaPicked(e: MatDatepickerInputEvent<Date>) {
+  onFechaPicked(e: MatDatepickerInputEvent<Date>): void {
     const d = e.value ?? null;
     this.form.get('fecha')?.setValue(d);
   }
 
-  async guardar() {
-    if (this.form.invalid || this.loading) {
+  async guardar(): Promise<void> {
+    if (this.form.invalid || this.saving) {
       this.form.markAllAsTouched();
       return;
     }
     
-    this.loading = true;
+    this.saving = true;
     this.errorMsg = null;
 
     const { visitante, local, fase, fecha, hora } = this.form.value;
@@ -139,53 +172,91 @@ export class IngresarJuego implements OnInit {
     try {
       const fechaStr = this.formatYYYYMMDD(fecha as Date);
 
-      await firstValueFrom(this.juegosService.crearJuego({
+      await this.juegosService.crearJuego({
         visitante: String(visitante),
         local: String(local),
         fase: String(fase),
         fecha: fechaStr,
         hora: String(hora),
-      }));
+      }).pipe(takeUntil(this.destroy$)).toPromise();
 
       this.form.reset();
-      
+      this.showMessage('Juego creado exitosamente', 'success');
       await this.cargarJuegos();
       
     } catch (err: any) {
       this.errorMsg = err?.message || 'No fue posible crear el juego';
+      this.showMessage(this.errorMsg, 'error');
     } finally {
-      this.loading = false;
+      this.saving = false;
+      this.cdr.detectChanges();
     }
   }
 
-  async actualizarScore(juego: Juego, lscoreInput: any, vscoreInput: any) {
+  async actualizarScore(juego: Juego, lscoreValue: any, vscoreValue: any): Promise<void> {
+    const lscore = parseInt(lscoreValue, 10) || 0;
+    const vscore = parseInt(vscoreValue, 10) || 0;
+    
+    if (isNaN(lscore) || isNaN(vscore)) return;
+    
     try {
-      const lscore = parseInt(lscoreInput, 10) || 0;
-      const vscore = parseInt(vscoreInput, 10) || 0;
+      await this.juegosService.actualizarScores(juego.id, lscore, vscore)
+        .pipe(takeUntil(this.destroy$)).toPromise();
       
-      if (isNaN(lscore) || isNaN(vscore)) {
-        return;
-      }
-      
-      await firstValueFrom(this.juegosService.actualizarScores(juego.id, lscore, vscore));
-      
+      this.showMessage(`Score actualizado: ${juego.local} ${lscore} - ${vscore} ${juego.visitante}`, 'success');
       await this.cargarJuegos();
       
     } catch (err: any) {
       this.errorMsg = err?.message || 'No fue posible actualizar el score';
-      await this.cargarJuegos();
+      this.showMessage(this.errorMsg, 'error');
     }
   }
 
-  async eliminarJuego(id: string) {
+  async eliminarJuego(id: string): Promise<void> {
     if (confirm('¿Estás seguro de eliminar este juego? Esta acción no se puede deshacer.')) {
       try {
-        await firstValueFrom(this.juegosService.eliminarJuego(id));
+        await this.juegosService.eliminarJuego(id).pipe(takeUntil(this.destroy$)).toPromise();
+        this.showMessage('Juego eliminado correctamente', 'success');
         await this.cargarJuegos();
       } catch (err: any) {
         this.errorMsg = err?.message || 'No fue posible eliminar el juego';
+        this.showMessage(this.errorMsg, 'error');
       }
     }
+  }
+
+  logout(): void {
+    this.authService.logout().pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.router.navigate(['/login']);
+      }
+    });
+  }
+
+  trackByEquipoId(index: number, equipo: Equipo): string {
+    return equipo.id;
+  }
+
+  trackByJuegoId(index: number, juego: Juego): string {
+    return juego.id;
+  }
+
+  trackByFase(index: number, fase: string): string {
+    return fase;
+  }
+
+  private showMessage(message: string | null, type: 'success' | 'error'): void {
+    if (!message) return; // Si no hay mensaje, no hacer nada
+    
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: type === 'success' ? 'snackbar-success' : 'snackbar-error'
+    });
   }
 
   private parseYYYYMMDD(s: string): Date | null {
@@ -205,16 +276,10 @@ export class IngresarJuego implements OnInit {
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}/${m}/${d}`;
   }
-    
-  logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        this.router.navigate(['/login']);
-      }
-    });
-  }  
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }
 
