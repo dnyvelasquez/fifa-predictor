@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTableModule } from '@angular/material/table';
@@ -12,6 +12,8 @@ import { MatTableModule } from '@angular/material/table';
     MatTableModule
   ],
   templateUrl: './reglamento.html',
-  styleUrls: ['./reglamento.css']
+  styleUrls: ['./reglamento.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Reglamento {}
+

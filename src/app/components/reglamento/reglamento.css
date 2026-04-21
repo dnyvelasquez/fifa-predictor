@@ -11,7 +11,7 @@
 .reglamento-card {
   max-width: 90%;
   padding: 20px;
-  }
+}
 
 .reglamento-title {
   font-size: 24px;
@@ -28,15 +28,16 @@
 
 .logo {
   width: 50px;
+  height: auto;
+  content-visibility: auto;
 }
-
 
 .header {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 16;
 }
 
 li {
@@ -47,3 +48,12 @@ li::marker {
   color: #003366;
   font-weight: bold;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
