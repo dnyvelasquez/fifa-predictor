@@ -1,6 +1,39 @@
 <div class="admin-container">
   <mat-card class="admin-card">
     <div class="header">
+      <img 
+        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" 
+        alt="FIFA Logo" 
+        class="logo"
+        loading="lazy"
+        width="50"
+        height="50">
+      <h1>FIFA Predictor 2026</h1>
+      <h1 aria-hidden="true">⚽</h1>
+    </div>
+    <mat-divider></mat-divider>
+
+    <h2 class="subtitle">Admin Module</h2>
+    <mat-divider></mat-divider>
+
+    <div class="button-container">
+      @for (item of menuItems; track item.path) {
+        <button mat-button routerLink="{{ item.path }}">
+          <mat-icon>{{ item.icon }}</mat-icon>
+          <span>{{ item.label }}</span>
+        </button>
+      }
+      <button mat-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+  </mat-card>
+</div>
+
+<!-- <div class="admin-container">
+  <mat-card class="admin-card">
+    <div class="header">
       <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
       <h1>FIFA Predictor 2026</h1>
       <h1> ⚽</h1>
@@ -46,4 +79,4 @@
     </div>
   </mat-card>
 </div>
-
+ -->
