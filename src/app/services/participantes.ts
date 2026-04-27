@@ -49,7 +49,6 @@ export class ParticipantesService {
           participantes.map(p =>
             this.equiposService.getEquiposDe(p.nombre).pipe(
               map(equipos => {
-                // Eliminar equipos duplicados por nombre
                 const equiposUnicos = equipos.filter((eq, index, self) => 
                   index === self.findIndex(e => e.nombre === eq.nombre)
                 );

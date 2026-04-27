@@ -147,3 +147,57 @@ mat-form-field.tight {
     justify-content: flex-start; 
   }
 }
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  background-color: white;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.loading-container p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  color: #999;
+}
+
+.empty-container mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+::ng-deep .snackbar-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+::ng-deep .snackbar-error {
+  background-color: #f44336;
+  color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
+  
+  button {
+    transition: none;
+  }
+}

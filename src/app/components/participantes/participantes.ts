@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -8,8 +8,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError, finalize } from 'rxjs/operators';
 import { AuthService } from '../../services/auth/auth';
 import { ParticipantesService } from '../../services/participantes';
 
@@ -29,25 +33,25 @@ type Row = { id: string; nombre: string; numero: number };
     RouterModule,
     ReactiveFormsModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   templateUrl: './participantes.html',
-  styleUrls: ['./participantes.css']
+  styleUrls: ['./participantes.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Participantes implements OnInit {
-
-  constructor(
-    private authService: AuthService,
-    private participantesService: ParticipantesService,
-    private router: Router
-  ) {}
-
+export class Participantes implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
+  private participantesService = inject(ParticipantesService);
+  private router = inject(Router);
   private fb = inject(FormBuilder);
-  
-  loading = false;
-  errorMsg: string | null = null;
-  okMsg: string | null = null;  
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
+  loading = false;
+  saving = false;
   participantes: Row[] = [];
 
   addForm = this.fb.group({
@@ -62,31 +66,49 @@ export class Participantes implements OnInit {
   }
 
   load(): void {
-    this.loading = true; this.errorMsg = this.okMsg = null;
-    this.participantesService.getParticipantes().subscribe({
-      next: (rows) => { this.participantes = rows; },
-      error: (e) => this.errorMsg = e?.message || 'No se pudieron cargar los participantes',
-      complete: () => this.loading = false
+    this.loading = true;
+    
+    this.participantesService.getParticipantes().pipe(
+      catchError(error => {
+        this.showMessage('No se pudieron cargar los participantes', 'error');
+        return of([]);
+      }),
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(rows => {
+      this.participantes = rows.sort((a, b) => a.numero - b.numero || a.nombre.localeCompare(b.nombre));
     });
   }
 
   add(): void {
-    if (this.addForm.invalid || this.loading) {
+    if (this.addForm.invalid || this.saving) {
       this.addForm.markAllAsTouched();
       return;
     }
+    
     const { nombre, numero } = this.addForm.value;
-    this.loading = true; this.errorMsg = this.okMsg = null;
+    this.saving = true;
 
-    this.participantesService.createParticipante(String(nombre), Number(numero)).subscribe({
-      next: (row: Row) => {
-        this.okMsg = 'Participante creado';
+    this.participantesService.createParticipante(String(nombre), Number(numero)).pipe(
+      catchError(error => {
+        this.showMessage(error?.message || 'No se pudo crear el participante', 'error');
+        return of(null);
+      }),
+      finalize(() => {
+        this.saving = false;
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(row => {
+      if (row) {
+        this.showMessage('Participante creado', 'success');
         this.addForm.reset();
         this.participantes = [...this.participantes, row]
           .sort((a, b) => a.numero - b.numero || a.nombre.localeCompare(b.nombre));
-      },
-      error: (e) => this.errorMsg = e?.message || 'No se pudo crear el participante',
-      complete: () => this.loading = false
+      }
     });
   }
 
@@ -105,7 +127,10 @@ export class Participantes implements OnInit {
 
   saveEdit(p: Row): void {
     const fg = this.editForms[p.id];
-    if (!fg || fg.invalid) { fg?.markAllAsTouched(); return; }
+    if (!fg || fg.invalid) {
+      fg?.markAllAsTouched();
+      return;
+    }
 
     const patch = {
       nombre: String(fg.value.nombre),
@@ -117,17 +142,26 @@ export class Participantes implements OnInit {
       return;
     }
 
-    this.loading = true; this.errorMsg = this.okMsg = null;
-    this.participantesService.updateParticipante(p.id, patch).subscribe({
-      next: (row: Row) => {
-        this.okMsg = 'Participante actualizado';
+    this.saving = true;
+
+    this.participantesService.updateParticipante(p.id, patch).pipe(
+      catchError(error => {
+        this.showMessage(error?.message || 'No se pudo actualizar', 'error');
+        return of(null);
+      }),
+      finalize(() => {
+        this.saving = false;
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(row => {
+      if (row) {
+        this.showMessage('Participante actualizado', 'success');
         this.participantes = this.participantes
           .map(x => x.id === p.id ? row : x)
           .sort((a, b) => a.numero - b.numero || a.nombre.localeCompare(b.nombre));
         this.cancelEdit(p);
-      },
-      error: (e) => this.errorMsg = e?.message || 'No se pudo actualizar',
-      complete: () => this.loading = false
+      }
     });
   }
 
@@ -135,22 +169,47 @@ export class Participantes implements OnInit {
     const ok = confirm(`¿Eliminar a "${p.nombre}"? Esta acción no se puede deshacer.`);
     if (!ok) return;
 
-    this.loading = true; this.errorMsg = this.okMsg = null;
-    this.participantesService.deleteParticipante(p.id).subscribe({
-      next: () => {
-        this.okMsg = 'Participante eliminado';
+    this.saving = true;
+
+    this.participantesService.deleteParticipante(p.id).pipe(
+      catchError(error => {
+        this.showMessage(error?.message || 'No se pudo eliminar', 'error');
+        return of(null);
+      }),
+      finalize(() => {
+        this.saving = false;
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(result => {
+      if (result) {
+        this.showMessage('Participante eliminado', 'success');
         this.participantes = this.participantes.filter(x => x.id !== p.id);
         delete this.editForms[p.id];
-      },
-      error: (e) => this.errorMsg = e?.message || 'No se pudo eliminar',
-      complete: () => this.loading = false
+      }
     });
   }
 
+  private showMessage(message: string, type: 'success' | 'error'): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: type === 'success' ? 'snackbar-success' : 'snackbar-error'
+    });
+  }
 
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
-  }  
+  }
 
+  trackByParticipanteId(index: number, p: Row): string {
+    return p.id;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

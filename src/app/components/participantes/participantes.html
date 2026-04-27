@@ -1,25 +1,28 @@
 <div class="participantes-container">
   <mat-card class="participantes-card">
     <div class="header">
-      <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
+      <img 
+        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" 
+        alt="FIFA Logo" 
+        class="logo"
+        loading="lazy"
+        width="50"
+        height="50">
       <mat-card-title class="participantes-title">Participantes</mat-card-title>
-      <h1> ⚽</h1>
+      <h1 aria-hidden="true">⚽</h1>
       <mat-divider></mat-divider>
     </div>
 
     <div class="button-container">
-      <button class="left" mat-menu-item routerLink="/admin">
+      <button class="left" mat-icon-button routerLink="/admin" aria-label="Volver">
         <mat-icon>arrow_back</mat-icon>
-        <span>Volver</span>
       </button>
-      <button class="right" mat-menu-item (click)="logout()">
+      <button class="right" mat-icon-button (click)="logout()" aria-label="Logout">
         <mat-icon>logout</mat-icon>
-        <span>Logout</span>
       </button>
     </div>
       
     <div class="table-container">
-
       <form [formGroup]="addForm" (ngSubmit)="add()" class="add">
         <mat-form-field appearance="fill" class="w">
           <mat-label>Nombre</mat-label>
@@ -43,14 +46,21 @@
           }
         </mat-form-field>
 
-        <button mat-raised-button class="agregar" type="submit" [disabled]="addForm.invalid || loading">
+        <button mat-raised-button class="agregar" type="submit" [disabled]="addForm.invalid || saving">
+          @if (saving) {
+            <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+          }
           Agregar
         </button>
       </form>
 
-      @if (loading) { <p>Cargando…</p> }
-      @if (errorMsg) { <div class="error">{{ errorMsg }}</div> }
-      @if (okMsg) { <div class="info">{{ okMsg }}</div> }
+      <!-- Loading Spinner -->
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>Cargando participantes...</p>
+        </div>
+      }
 
       <div class="table">
         <div class="thead row">
@@ -60,22 +70,18 @@
         </div>
 
         <div class="tbody">
-
           @for (p of participantes; track p.id) {
-
             @if (!editForms[p.id]) {
               <div class="row">
                 <div class="cell n">
                   <span>{{ p.numero }}</span>
                 </div>
-
                 <div class="cell w">
                   <span>{{ p.nombre }}</span>
                 </div>
-
                 <div class="cell a">
-                  <button mat-stroked-button (click)="startEdit(p)">Editar</button>
-                  <button mat-button color="warn" (click)="remove(p)">Eliminar</button>
+                  <button mat-stroked-button (click)="startEdit(p)" [disabled]="saving">Editar</button>
+                  <button mat-button color="warn" (click)="remove(p)" [disabled]="saving">Eliminar</button>
                 </div>
               </div>
             } @else {
@@ -85,31 +91,35 @@
                     <input matInput type="number" formControlName="numero" />
                   </mat-form-field>
                 </div>
-
                 <div class="cell w">
                   <mat-form-field appearance="fill" class="tight">
                     <input matInput formControlName="nombre" />
                   </mat-form-field>
                 </div>
-
                 <div class="cell a">
                   <button mat-raised-button color="primary"
                     (click)="saveEdit(p)"
-                    [disabled]="editForms[p.id]?.invalid || loading">
+                    [disabled]="editForms[p.id]?.invalid || saving">
+                    @if (saving) {
+                      <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                    }
                     Guardar
                   </button>
-                  <button mat-button (click)="cancelEdit(p)">Cancelar</button>
+                  <button mat-button (click)="cancelEdit(p)" [disabled]="saving">Cancelar</button>
                 </div>
               </div>
             }
+          } @empty {
+            @if (!loading) {
+              <div class="empty-container">
+                <mat-icon>people_outline</mat-icon>
+                <p>No hay participantes registrados</p>
+              </div>
+            }
           }
-
         </div>
       </div>      
-      
     </div>      
   </mat-card>
 </div>
-
-
 
