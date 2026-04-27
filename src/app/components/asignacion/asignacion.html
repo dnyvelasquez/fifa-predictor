@@ -1,4 +1,75 @@
 <div class="asignacion-container">
+  <mat-card class="asignacion-card">
+    <div class="header">
+      <img 
+        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" 
+        alt="FIFA Logo" 
+        class="logo"
+        loading="lazy"
+        width="50"
+        height="50">
+      <mat-card-title class="asignacion-title">Asignación de Equipos</mat-card-title>
+      <h1 aria-hidden="true">⚽</h1>
+      <mat-divider></mat-divider>
+    </div>
+
+    <div class="button-container">
+      <button class="left" mat-icon-button routerLink="/admin" aria-label="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button mat-stroked-button class="reset" (click)="resetAll()" [disabled]="saving()">
+        <mat-icon>restart_alt</mat-icon>&nbsp;Reset
+      </button>
+      <button class="right" mat-icon-button (click)="logout()" aria-label="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando asignaciones...</p>
+      </div>
+    }
+
+    <div class="matrix-wrapper" [class.loading]="loading() || saving()">
+      <div class="grid" [style.gridTemplateColumns]="'100px ' + '1fr '.repeat(participantes().length)">
+        <div class="cell head sticky">&nbsp;</div>
+        @for (p of participantes(); track p.id) {
+          <div class="cell head sticky">{{ p.numero }} - {{ p.nombre }}</div>
+        }
+        
+        @for (fila of filas; track fila.id) {
+          <div class="cell head sticky-left">{{ fila.label }}</div>
+          @for (p of participantes(); track p.id) {
+            <div class="cell">
+              <mat-select
+                [value]="getEquipoAsignado(p.nombre, fila.id)"
+                (selectionChange)="onChangeCelda(fila.id, p.nombre, $event.value)"
+                [disabled]="saving()"
+                disableOptionCentering
+                panelClass="asig-panel"
+              >
+                <mat-option [value]="null">— Sin asignación —</mat-option>
+                @for (eq of equiposOrdenados(); track eq.id) {
+                  <mat-option 
+                    [value]="eq.id" 
+                    [disabled]="isEquipoDisabled(p.nombre, fila.id, eq.id)">
+                    {{ eq.nombre }}
+                  </mat-option>
+                }
+              </mat-select>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </mat-card>
+</div>
+
+
+
+<!-- <div class="asignacion-container">
     <mat-card class="asignacion-card">
         <div class="header">
             <img src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" alt="FIFA Logo" class="logo">
@@ -53,4 +124,4 @@
             </div>
         </div>
     </mat-card>
-</div>
+</div> -->

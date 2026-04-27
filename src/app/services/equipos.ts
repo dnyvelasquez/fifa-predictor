@@ -355,11 +355,6 @@ export class EquiposService {
     );
   }
 
-  // En equipos.service.ts, añadir:
-
-  /**
-   * Actualiza un campo específico de un equipo con validaciones
-   */
   async updateClasificacionField(
     equipoId: string, 
     field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
@@ -372,7 +367,6 @@ export class EquiposService {
       return { success: false, error: 'Equipo no encontrado' };
     }
 
-    // Validaciones
     const validation = this.validateClasificacionField(equipo, field, value, equiposActuales);
     if (!validation.valid) {
       return { success: false, error: validation.error };
@@ -380,7 +374,6 @@ export class EquiposService {
 
     const updateData: Partial<Equipo> = { [field]: value };
     
-    // Limpiar campos dependientes
     this.cleanDependentClasificacionFields(equipo, field, value, updateData);
 
     try {
@@ -391,7 +384,6 @@ export class EquiposService {
 
       if (error) throw error;
 
-      // Actualizar el equipo localmente
       const equiposActualizados = equiposActuales.map(e => {
         if (e.id === equipoId) {
           const updated = { ...e, [field]: value };
@@ -412,9 +404,6 @@ export class EquiposService {
     }
   }
 
-  /**
-   * Valida un campo de clasificación
-   */
   validateClasificacionField(
     equipo: Equipo, 
     field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
@@ -481,9 +470,6 @@ export class EquiposService {
     return { valid: true };
   }
 
-  /**
-   * Limpia campos dependientes basados en el campo actualizado
-   */
   private cleanDependentClasificacionFields(
     equipo: Equipo, 
     field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
@@ -507,9 +493,6 @@ export class EquiposService {
     }
   }
 
-  /**
-   * Resetea toda la clasificación
-   */
   async resetAllClasificacion(equipos: Equipo[]): Promise<{ success: boolean; error?: string }> {
     try {
       const updates = equipos.map(equipo => 
@@ -528,7 +511,6 @@ export class EquiposService {
     }
   }
 
-  // Métodos auxiliares para opciones
   getUsedOfValues(equipos: Equipo[]): Set<string> {
     const equiposConE32 = equipos.filter(e => e.e32 && e.e32.trim() !== '');
     return new Set(equiposConE32.map(e => e.of).filter(v => v && v.trim() !== ''));
@@ -549,7 +531,6 @@ export class EquiposService {
     return new Set(equiposConSF.map(e => e.gf).filter(v => v && v.trim() !== ''));
   }
 
-  // Opciones estáticas
   getE32Options(): string[] {
     return ['1', '2', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8'];
   }
