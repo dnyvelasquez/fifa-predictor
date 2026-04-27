@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
@@ -7,10 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
-import { Service } from '../../services/data';
+import { Subject, firstValueFrom, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { EquiposService, Equipo } from '../../services/equipos';
-import { lastValueFrom } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
 import { SupabaseClientService } from '../../services/core/supabase-client';
@@ -28,29 +29,27 @@ import { SupabaseClientService } from '../../services/core/supabase-client';
     RouterModule,
     MatMenuModule,
     MatFormFieldModule,
+    MatProgressSpinnerModule,
     FormsModule
   ],
   templateUrl: './clasificacion.html',
   styleUrls: ['./clasificacion.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
+export class Clasificacion implements OnInit, OnDestroy {
+  private authService = inject(AuthService);
+  private supabaseClientService = inject(SupabaseClientService);
+  private equiposService = inject(EquiposService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
-export class Clasificacion implements OnInit {
-
-  constructor(
-    private authService: AuthService,
-    private supabaseClientService: SupabaseClientService,
-    private equiposService: EquiposService,
-    private router: Router
-  ) {}
-
-  //private svc = inject(Service);
-  
   equipos = signal<Equipo[]>([]);
-  loading = signal(false);
+  loading = signal(true);
   saving = signal(false);
   message = signal<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  e32Options = ['1', '2', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8'];
+  readonly e32Options = ['1', '2', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8'];
   
   ofOptions = signal<string[]>([]);
   cfOptions = signal<string[]>([]);
@@ -62,32 +61,60 @@ export class Clasificacion implements OnInit {
   usedSfValues = signal<Set<string>>(new Set());
   usedGfValues = signal<Set<string>>(new Set());
 
-  ngOnInit() {
+  gruposAgrupados = computed(() => {
+    const gruposMap = new Map<string, Equipo[]>();
+    this.equipos().forEach(equipo => {
+      if (!gruposMap.has(equipo.grupo)) {
+        gruposMap.set(equipo.grupo, []);
+      }
+      gruposMap.get(equipo.grupo)!.push(equipo);
+    });
+    
+    return Array.from(gruposMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([grupo, equipos]) => ({ grupo, equipos }));
+  });
+
+  ngOnInit(): void {
     this.loadData();
   }
 
-  async loadData() {
+  async loadData(): Promise<void> {
     this.loading.set(true);
+    
     try {
-      const equipos = await lastValueFrom(this.equiposService.getEquipos());
+      const equipos = await firstValueFrom(
+        this.equiposService.getEquipos().pipe(
+          catchError(error => {
+            console.error('Error fetching equipos:', error);
+            this.showMessage('Error al cargar los equipos', 'error');
+            return of([]);
+          })
+        )
+      );
+      
       const sortedEquipos = [...equipos].sort((a, b) => {
         if (a.grupo === b.grupo) {
           return a.id.localeCompare(b.id);
         }
         return a.grupo.localeCompare(b.grupo);
       });
+      
       this.equipos.set(sortedEquipos);
       this.updateOptions();
+      
     } catch (error) {
       console.error('Error loading data:', error);
       this.showMessage('Error al cargar los datos', 'error');
     } finally {
       this.loading.set(false);
+      this.cdr.detectChanges();
     }
   }
 
-  updateOptions() {
+  updateOptions(): void {
     const equiposConE32 = this.equipos().filter(e => e.e32 && e.e32.trim() !== '');
+    
     const usedOf = new Set(equiposConE32.map(e => e.of).filter(v => v && v.trim() !== ''));
     this.usedOfValues.set(usedOf);
     this.ofOptions.set(Array.from({ length: 16 }, (_, i) => (i + 1).toString()));
@@ -108,23 +135,9 @@ export class Clasificacion implements OnInit {
     this.gfOptions.set(Array.from({ length: 2 }, (_, i) => (i + 1).toString()));
   }
 
-  getEquiposPorGrupo(): Map<string, Equipo[]> {
-    const grupos = new Map<string, Equipo[]>();
-    this.equipos().forEach(equipo => {
-      if (!grupos.has(equipo.grupo)) {
-        grupos.set(equipo.grupo, []);
-      }
-      grupos.get(equipo.grupo)!.push(equipo);
-    });
-    return grupos;
-  }
-
-  getGruposOrdenados(): string[] {
-    return Array.from(this.getEquiposPorGrupo().keys()).sort();
-  }
-
-  async updateEquipo(equipo: Equipo, field: keyof Equipo, value: string) {
+  async updateEquipo(equipo: Equipo, field: keyof Equipo, value: string): Promise<void> {
     this.saving.set(true);
+    
     try {
       if (field === 'e32') {
         if (value === '1' || value === '2') {
@@ -141,13 +154,6 @@ export class Clasificacion implements OnInit {
             return;
           }
         }
-        
-        if (equipo.e32 !== value) {
-          equipo.of = '';
-          equipo.cf = '';
-          equipo.sf = '';
-          equipo.gf = '';
-        }
       }
 
       if (field === 'of' && value) {
@@ -158,11 +164,6 @@ export class Clasificacion implements OnInit {
         if (!equipo.e32 || equipo.e32.trim() === '') {
           this.showMessage('Debe asignar Eliminatoria 32 primero', 'error');
           return;
-        }
-        if (equipo.of !== value) {
-          equipo.cf = '';
-          equipo.sf = '';
-          equipo.gf = '';
         }
       }
 
@@ -175,10 +176,6 @@ export class Clasificacion implements OnInit {
           this.showMessage('Debe asignar Octavos de Final primero', 'error');
           return;
         }
-        if (equipo.cf !== value) {
-          equipo.sf = '';
-          equipo.gf = '';
-        }
       }
 
       if (field === 'sf' && value) {
@@ -189,9 +186,6 @@ export class Clasificacion implements OnInit {
         if (!equipo.cf || equipo.cf.trim() === '') {
           this.showMessage('Debe asignar Cuartos de Final primero', 'error');
           return;
-        }
-        if (equipo.sf !== value) {
-          equipo.gf = '';
         }
       }
 
@@ -241,20 +235,23 @@ export class Clasificacion implements OnInit {
       this.equipos.set([...this.equipos()]);
       this.updateOptions();
       this.showMessage('Guardado exitosamente', 'success');
+      
     } catch (error) {
       console.error('Error updating equipo:', error);
       this.showMessage('Error al guardar los cambios', 'error');
     } finally {
       this.saving.set(false);
+      this.cdr.detectChanges();
     }
   }
 
-  async resetAll() {
+  async resetAll(): Promise<void> {
     if (!confirm('¿Estás seguro de que quieres resetear toda la clasificación? Se perderán todos los datos.')) {
       return;
     }
 
     this.saving.set(true);
+    
     try {
       const updates = this.equipos().map(equipo => 
         this.supabaseClientService['supabase']
@@ -271,22 +268,14 @@ export class Clasificacion implements OnInit {
       
       this.updateOptions();
       this.showMessage('Todos los datos han sido reseteados', 'success');
+      
     } catch (error) {
       console.error('Error resetting data:', error);
       this.showMessage('Error al resetear los datos', 'error');
     } finally {
       this.saving.set(false);
+      this.cdr.detectChanges();
     }
-  }
-
-  showMessage(text: string, type: 'success' | 'error') {
-    this.message.set({ text, type });
-    setTimeout(() => this.message.set(null), 3000);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 
   isOptionDisabled(field: string, value: string, equipo: Equipo): boolean {
@@ -314,18 +303,29 @@ export class Clasificacion implements OnInit {
     return false;
   }
 
-  getGruposAgrupados(): { grupo: string; equipos: Equipo[] }[] {
-    const gruposMap = new Map<string, Equipo[]>();
-    this.equipos().forEach(equipo => {
-      if (!gruposMap.has(equipo.grupo)) {
-        gruposMap.set(equipo.grupo, []);
-      }
-      gruposMap.get(equipo.grupo)!.push(equipo);
-    });
-    
-    return Array.from(gruposMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([grupo, equipos]) => ({ grupo, equipos }));
+  showMessage(text: string, type: 'success' | 'error'): void {
+    this.message.set({ text, type });
+    setTimeout(() => {
+      this.message.set(null);
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  trackByEquipoId(index: number, equipo: Equipo): string {
+    return equipo.id;
+  }
+
+  trackByGrupo(index: number, grupo: { grupo: string; equipos: Equipo[] }): string {
+    return grupo.grupo;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

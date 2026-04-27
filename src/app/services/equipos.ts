@@ -355,4 +355,225 @@ export class EquiposService {
     );
   }
 
+  // En equipos.service.ts, añadir:
+
+  /**
+   * Actualiza un campo específico de un equipo con validaciones
+   */
+  async updateClasificacionField(
+    equipoId: string, 
+    field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
+    value: string,
+    equiposActuales: Equipo[]
+  ): Promise<{ success: boolean; error?: string; equiposActualizados?: Equipo[] }> {
+    
+    const equipo = equiposActuales.find(e => e.id === equipoId);
+    if (!equipo) {
+      return { success: false, error: 'Equipo no encontrado' };
+    }
+
+    // Validaciones
+    const validation = this.validateClasificacionField(equipo, field, value, equiposActuales);
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
+    }
+
+    const updateData: Partial<Equipo> = { [field]: value };
+    
+    // Limpiar campos dependientes
+    this.cleanDependentClasificacionFields(equipo, field, value, updateData);
+
+    try {
+      const { error } = await this.supabaseClient
+        .from('equipos')
+        .update(updateData)
+        .eq('id', equipoId);
+
+      if (error) throw error;
+
+      // Actualizar el equipo localmente
+      const equiposActualizados = equiposActuales.map(e => {
+        if (e.id === equipoId) {
+          const updated = { ...e, [field]: value };
+          if (updateData.of !== undefined) updated.of = updateData.of;
+          if (updateData.cf !== undefined) updated.cf = updateData.cf;
+          if (updateData.sf !== undefined) updated.sf = updateData.sf;
+          if (updateData.gf !== undefined) updated.gf = updateData.gf;
+          return updated;
+        }
+        return e;
+      });
+
+      return { success: true, equiposActualizados };
+      
+    } catch (error: any) {
+      console.error('Error updating clasificacion:', error);
+      return { success: false, error: error?.message || 'Error al guardar' };
+    }
+  }
+
+  /**
+   * Valida un campo de clasificación
+   */
+  validateClasificacionField(
+    equipo: Equipo, 
+    field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
+    value: string,
+    equiposActuales: Equipo[]
+  ): { valid: boolean; error?: string } {
+    
+    if (field === 'e32') {
+      if (value === '1' || value === '2') {
+        const mismoGrupo = equiposActuales.filter(e => e.grupo === equipo.grupo);
+        const tiene1 = mismoGrupo.some(e => e.e32 === '1' && e.id !== equipo.id);
+        const tiene2 = mismoGrupo.some(e => e.e32 === '2' && e.id !== equipo.id);
+        
+        if (value === '1' && tiene1) {
+          return { valid: false, error: `Ya existe un equipo con '1' en el grupo ${equipo.grupo}` };
+        }
+        if (value === '2' && tiene2) {
+          return { valid: false, error: `Ya existe un equipo con '2' en el grupo ${equipo.grupo}` };
+        }
+      }
+      return { valid: true };
+    }
+
+    if (field === 'of' && value) {
+      const usedOf = this.getUsedOfValues(equiposActuales);
+      if (usedOf.has(value) && equipo.of !== value) {
+        return { valid: false, error: `El número ${value} ya está asignado en Octavos de Final` };
+      }
+      if (!equipo.e32 || equipo.e32.trim() === '') {
+        return { valid: false, error: 'Debe asignar Eliminatoria 32 primero' };
+      }
+    }
+
+    if (field === 'cf' && value) {
+      const usedCf = this.getUsedCfValues(equiposActuales);
+      if (usedCf.has(value) && equipo.cf !== value) {
+        return { valid: false, error: `El número ${value} ya está asignado en Cuartos de Final` };
+      }
+      if (!equipo.of || equipo.of.trim() === '') {
+        return { valid: false, error: 'Debe asignar Octavos de Final primero' };
+      }
+    }
+
+    if (field === 'sf' && value) {
+      const usedSf = this.getUsedSfValues(equiposActuales);
+      if (usedSf.has(value) && equipo.sf !== value) {
+        return { valid: false, error: `El número ${value} ya está asignado en Semifinal` };
+      }
+      if (!equipo.cf || equipo.cf.trim() === '') {
+        return { valid: false, error: 'Debe asignar Cuartos de Final primero' };
+      }
+    }
+
+    if (field === 'gf' && value) {
+      const usedGf = this.getUsedGfValues(equiposActuales);
+      if (usedGf.has(value) && equipo.gf !== value) {
+        return { valid: false, error: `El número ${value} ya está asignado en Gran Final` };
+      }
+      if (!equipo.sf || equipo.sf.trim() === '') {
+        return { valid: false, error: 'Debe asignar Semifinal primero' };
+      }
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Limpia campos dependientes basados en el campo actualizado
+   */
+  private cleanDependentClasificacionFields(
+    equipo: Equipo, 
+    field: 'e32' | 'of' | 'cf' | 'sf' | 'gf', 
+    value: string, 
+    updateData: Partial<Equipo>
+  ): void {
+    if (field === 'e32' && equipo.e32 !== value) {
+      updateData.of = '';
+      updateData.cf = '';
+      updateData.sf = '';
+      updateData.gf = '';
+    } else if (field === 'of' && equipo.of !== value) {
+      updateData.cf = '';
+      updateData.sf = '';
+      updateData.gf = '';
+    } else if (field === 'cf' && equipo.cf !== value) {
+      updateData.sf = '';
+      updateData.gf = '';
+    } else if (field === 'sf' && equipo.sf !== value) {
+      updateData.gf = '';
+    }
+  }
+
+  /**
+   * Resetea toda la clasificación
+   */
+  async resetAllClasificacion(equipos: Equipo[]): Promise<{ success: boolean; error?: string }> {
+    try {
+      const updates = equipos.map(equipo => 
+        this.supabaseClient
+          .from('equipos')
+          .update({ e32: '', of: '', cf: '', sf: '', gf: '' })
+          .eq('id', equipo.id)
+      );
+      
+      await Promise.all(updates);
+      return { success: true };
+      
+    } catch (error: any) {
+      console.error('Error resetting clasificacion:', error);
+      return { success: false, error: error?.message || 'Error al resetear' };
+    }
+  }
+
+  // Métodos auxiliares para opciones
+  getUsedOfValues(equipos: Equipo[]): Set<string> {
+    const equiposConE32 = equipos.filter(e => e.e32 && e.e32.trim() !== '');
+    return new Set(equiposConE32.map(e => e.of).filter(v => v && v.trim() !== ''));
+  }
+
+  getUsedCfValues(equipos: Equipo[]): Set<string> {
+    const equiposConOF = equipos.filter(e => e.of && e.of.trim() !== '');
+    return new Set(equiposConOF.map(e => e.cf).filter(v => v && v.trim() !== ''));
+  }
+
+  getUsedSfValues(equipos: Equipo[]): Set<string> {
+    const equiposConCF = equipos.filter(e => e.cf && e.cf.trim() !== '');
+    return new Set(equiposConCF.map(e => e.sf).filter(v => v && v.trim() !== ''));
+  }
+
+  getUsedGfValues(equipos: Equipo[]): Set<string> {
+    const equiposConSF = equipos.filter(e => e.sf && e.sf.trim() !== '');
+    return new Set(equiposConSF.map(e => e.gf).filter(v => v && v.trim() !== ''));
+  }
+
+  // Opciones estáticas
+  getE32Options(): string[] {
+    return ['1', '2', '3-1', '3-2', '3-3', '3-4', '3-5', '3-6', '3-7', '3-8'];
+  }
+
+  getOfOptions(): string[] {
+    return Array.from({ length: 16 }, (_, i) => (i + 1).toString());
+  }
+
+  getCfOptions(): string[] {
+    return Array.from({ length: 8 }, (_, i) => (i + 1).toString());
+  }
+
+  getSfOptions(): string[] {
+    return Array.from({ length: 4 }, (_, i) => (i + 1).toString());
+  }
+
+  getGfOptions(): string[] {
+    return Array.from({ length: 2 }, (_, i) => (i + 1).toString());
+  }
+
+
+
+
+
+
+
 }

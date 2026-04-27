@@ -1,4 +1,3 @@
-/* clasificacion.css - Versión corregida para tabla */
 .clasificacion-container {
   padding-top: 80px;
   padding-bottom: 20px;
@@ -235,4 +234,27 @@ mat-select {
 
 .clasificacion-table tbody tr:last-child-of-group {
     border-bottom: 2px solid #e0e7ff;
+}
+
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  background-color: white;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.loading-spinner-container p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.table-wrapper.loading {
+  opacity: 0.5;
+  pointer-events: none;
 }
