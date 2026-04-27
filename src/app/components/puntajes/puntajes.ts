@@ -10,9 +10,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { AsyncPipe } from '@angular/common';
-import { Observable, Subject, of } from 'rxjs';
-import { takeUntil, catchError, finalize, shareReplay, tap } from 'rxjs/operators';
+import { Subject, of } from 'rxjs';
+import { takeUntil, catchError, finalize, tap } from 'rxjs/operators';
 import { AuthService } from '../../services/auth/auth';
 import { EquiposService, Equipo } from '../../services/equipos';
 import { ParticipantesService } from '../../services/participantes';
@@ -26,7 +25,6 @@ import { Router, RouterModule } from '@angular/router';
     MatCardModule,
     MatDividerModule,
     MatTableModule,
-    AsyncPipe,
     CommonModule,
     MatIconModule,
     MatMenuModule,
@@ -76,7 +74,6 @@ export class Puntajes implements OnInit, OnDestroy {
       }),
       takeUntil(this.destroy$)
     ).subscribe(equipos => {
-      // Filtrar equipos con participantes asignados
       this.equipos = equipos.filter(e => {
         const participante = (e.participante ?? '').trim();
         return participante && participante.toLowerCase() !== 'no asignado';
@@ -116,7 +113,7 @@ export class Puntajes implements OnInit, OnDestroy {
     ).subscribe({
       next: (r: any) => {
         this.showMessage(`Acumulado actualizado (${r?.updated ?? 0} participante(s))`, 'success');
-        this.loadEquipos(); // Recargar equipos
+        this.loadEquipos(); 
         this.saving = false;
       },
       error: (e) => {
