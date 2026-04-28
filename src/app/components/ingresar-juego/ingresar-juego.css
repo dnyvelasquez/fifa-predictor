@@ -138,6 +138,17 @@ table {
   color: #666;
 }
 
+::ng-deep .score-field .mdc-text-field--filled {
+  background-color: transparent !important;
+  border: 2px solid #f9f9f9 !important;
+  border-radius: 10px !important;
+  margin: 16px;
+}
+
+::ng-deep .score-field .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
 ::ng-deep .snackbar-success {
   background-color: #4caf50;
   color: white;
