@@ -100,7 +100,7 @@
   padding: 12px;
   background-color: #f5f5f5;
   border-radius: 12px;
-  min-width: 100px;
+  min-width: 80px;
   transition: all 0.2s;
 }
 
@@ -116,8 +116,7 @@
 }
 
 .equipo-logo {
-  width: 100px;
-  height: 60px;
+  width: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
@@ -166,7 +165,7 @@
     flex-direction: row;
     align-items: center;
     gap: 20px;
-    min-width: 100px;
+    min-width: 80px;
     padding: 16px 24px;
   }
   
@@ -229,8 +228,7 @@
   }
   
   .equipo-logo {
-    width: 50px;
-    height: 35px;
+    width: 80px;
     order: 2;
   }
   
