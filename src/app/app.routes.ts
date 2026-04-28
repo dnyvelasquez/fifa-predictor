@@ -8,9 +8,8 @@ import { Juegos } from './components/juegos/juegos';
 import { Login } from './components/login/login';
 import { Admin } from './components/admin/admin';
 import { Puntajes } from './components/puntajes/puntajes';
-import { NuevoUsuario } from './components/nuevo-usuario/nuevo-usuario';
 import { IngresarJuego } from './components/ingresar-juego/ingresar-juego';
-import { BorrarUsuario } from './components/borrar-usuario/borrar-usuario';
+import { Usuarios } from './components/usuarios/usuarios';
 import { Participantes } from './components/participantes/participantes';
 import { Asignacion } from './components/asignacion/asignacion';
 import { Clasificacion } from './components/clasificacion/clasificacion';
@@ -30,8 +29,7 @@ export const routes: Routes = [
 
   { path: 'admin', component: Admin, canActivate: [authGuard] },
   { path: 'puntajes', component: Puntajes, canActivate: [authGuard] },
-  { path: 'nuevo-usuario', component: NuevoUsuario, canActivate: [authGuard] },
-  { path: 'borrar-usuario', component: BorrarUsuario, canActivate: [authGuard] },
+  { path: 'usuarios', component: Usuarios, canActivate: [authGuard] },
   { path: 'ingresar-juego', component: IngresarJuego, canActivate: [authGuard] },
   { path: 'participantes', component: Participantes, canActivate: [authGuard] },
   { path: 'asignacion', component: Asignacion, canActivate: [authGuard] },

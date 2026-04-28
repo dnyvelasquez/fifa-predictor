@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, ChangeDetectorRef, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { takeUntil, catchError, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth/auth';
 
 interface User {
@@ -23,13 +24,15 @@ interface User {
 }
 
 @Component({
-  selector: 'app-borrar-usuario',
+  selector: 'app-usuarios',
   standalone: true,
   imports: [
-    ReactiveFormsModule, 
-    MatCardModule, 
-    MatButtonModule, 
-    MatFormFieldModule, 
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatFormFieldModule,
     MatInputModule,
     MatDividerModule,
     MatIconModule,
@@ -38,11 +41,11 @@ interface User {
     MatSnackBarModule,
     RouterModule
   ],
-  templateUrl: './borrar-usuario.html',
-  styleUrls: ['./borrar-usuario.css'],
+  templateUrl: './usuarios.html',
+  styleUrls: ['./usuarios.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BorrarUsuario implements OnInit, OnDestroy {
+export class Usuarios implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -50,22 +53,29 @@ export class BorrarUsuario implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
-  loading = false;
-  deleting = false;
+  // Estados
+  loading = signal(false);
+  creating = signal(false);
+  deleting = signal(false);
   
-  page = 1;
-  perPage = 20;
-  q = '';
-  totalPages = 1;
+  // Usuarios
+  users = signal<User[]>([]);
+  searchQuery = signal('');
+  searchControl = this.fb.control('');
 
-  users: User[] = [];
+  // Formulario para crear usuario
+  createForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]]
+  });
 
-  search = this.fb.control('');
+  get f() { return this.createForm.controls; }
 
   ngOnInit(): void {
-    this.load();
+    this.loadUsers();
     
-    this.search.valueChanges.pipe(
+    // Búsqueda con debounce
+    this.searchControl.valueChanges.pipe(
       debounceTime(500),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
@@ -74,71 +84,98 @@ export class BorrarUsuario implements OnInit, OnDestroy {
     });
   }
 
-  load(page = this.page, q = this.q): void {
-    this.loading = true;
+  // ==================== CREAR USUARIO ====================
+  submitCreate(): void {
+    if (this.createForm.invalid || this.creating()) {
+      this.createForm.markAllAsTouched();
+      return;
+    }
+    
+    this.creating.set(true);
 
-    this.authService.listUsers().pipe(
+    const { email, password } = this.createForm.value;
+
+    this.authService.createUser(String(email), String(password)).pipe(
       catchError(error => {
-        this.showMessage(error?.message || 'Error cargando usuarios', 'error');
-        return of({ users: [], page: 1, perPage: 20 });
+        this.showMessage(error?.message || 'No fue posible crear el usuario', 'error');
+        return of(null);
       }),
       finalize(() => {
-        this.loading = false;
+        this.creating.set(false);
         this.cdr.detectChanges();
       }),
       takeUntil(this.destroy$)
     ).subscribe(res => {
-      // El servicio ya maneja errores, res siempre es válido
-      this.users = (res as any)?.users ?? [];
-      this.page = (res as any)?.page ?? page;
-      this.perPage = (res as any)?.perPage ?? this.perPage;
-      this.totalPages = Math.ceil(((res as any)?.total_count || this.users.length) / this.perPage);
+      if (res) {
+        this.showMessage('Usuario creado correctamente', 'success');
+        this.createForm.reset();
+        this.loadUsers();
+      }
+    });
+  }
+
+  // ==================== LISTAR Y ELIMINAR USUARIOS ====================
+  loadUsers(): void {
+    this.loading.set(true);
+
+    this.authService.listUsers().pipe(
+      catchError(error => {
+        this.showMessage(error?.message || 'Error cargando usuarios', 'error');
+        return of({ users: [] });
+      }),
+      finalize(() => {
+        this.loading.set(false);
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(res => {
+      let allUsers = (res as any)?.users ?? [];
+      
+      // Filtrar por búsqueda
+      if (this.searchQuery()) {
+        const query = this.searchQuery().toLowerCase();
+        allUsers = allUsers.filter((u: User) => 
+          u.email?.toLowerCase().includes(query)
+        );
+      }
+      
+      // Ordenar por fecha de creación descendente
+      this.users.set(allUsers.sort((a: User, b: User) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ));
     });
   }
 
   doSearch(): void {
-    this.q = this.search.value?.trim() || '';
-    this.page = 1;
-    this.load(1, this.q);
+    this.searchQuery.set(this.searchControl.value?.trim() || '');
+    this.loadUsers();
   }
 
-  nextPage(): void {
-    if (this.page < this.totalPages) {
-      this.load(this.page + 1, this.q);
-    }
-  }
-  
-  prevPage(): void {
-    if (this.page > 1) {
-      this.load(this.page - 1, this.q);
-    }
-  }
-
-  confirmAndDelete(u: User): void {
-    const ok = confirm(`¿Eliminar al usuario ${u.email ?? u.id}? Esta acción no se puede deshacer.`);
+  confirmAndDelete(user: User): void {
+    const ok = confirm(`¿Eliminar al usuario ${user.email ?? user.id}? Esta acción no se puede deshacer.`);
     if (!ok) return;
 
-    this.deleting = true;
+    this.deleting.set(true);
 
-    this.authService.deleteUser(u.id).pipe(
+    this.authService.deleteUser(user.id).pipe(
       catchError(error => {
         this.showMessage(error?.message || 'No se pudo eliminar', 'error');
         return of(null);
       }),
       finalize(() => {
-        this.deleting = false;
+        this.deleting.set(false);
         this.cdr.detectChanges();
       }),
       takeUntil(this.destroy$)
     ).subscribe(res => {
-      // Si llegamos aquí, la operación fue exitosa (el servicio maneja errores)
       if (res !== null) {
         this.showMessage('Usuario eliminado correctamente', 'success');
-        this.load(this.page, this.q);
+        this.loadUsers();
       }
     });
   }
 
+  // ==================== UTILIDADES ====================
   private showMessage(message: string, type: 'success' | 'error'): void {
     this.snackBar.open(message, 'Cerrar', {
       duration: 3000,

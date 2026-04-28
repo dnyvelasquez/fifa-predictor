@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BorrarUsuario } from './borrar-usuario';
+import { Usuarios } from './usuarios';
 
-describe('BorrarUsuario', () => {
-  let component: BorrarUsuario;
-  let fixture: ComponentFixture<BorrarUsuario>;
+describe('Usuarios', () => {
+  let component: Usuarios;
+  let fixture: ComponentFixture<Usuarios>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BorrarUsuario]
+      imports: [Usuarios]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(BorrarUsuario);
+    fixture = TestBed.createComponent(Usuarios);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
