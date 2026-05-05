@@ -287,3 +287,13 @@
     transition: none;
   }
 }
+
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+::ng-deep .mdc-text-field--filled {
+  background-color: transparent !important;
+  border: 2px solid #f9f9f9 !important;
+  border-radius: 10px !important;
+}
