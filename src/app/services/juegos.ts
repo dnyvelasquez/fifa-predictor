@@ -12,8 +12,8 @@ export interface Juego {
   fecha: string;
   hora: string;
   actual: boolean;
-  lscore: number;
-  vscore: number;
+  lscore: number | null;
+  vscore: number | null;
   logoVisitante?: string;
   logoLocal?: string;
   participanteVisitante?: string;
@@ -275,7 +275,7 @@ export class JuegosService {
     return from(
       this.supabaseClient
         .from('juegos')
-        .update({ lscore: lscore || 0, vscore: vscore || 0 })
+        .update({ lscore: lscore ?? null, vscore: vscore ?? null })
         .eq('id', id)
         .select()
     ).pipe(
@@ -291,11 +291,30 @@ export class JuegosService {
     );
   }
 
-  actualizarScores(id: string, lscore: number, vscore: number): Observable<Juego> {
+  actualizarCampos(id: string, campos: Partial<Pick<Juego, 'local' | 'visitante' | 'fase' | 'fecha' | 'hora'>>): Observable<Juego> {
     return from(
       this.supabaseClient
         .from('juegos')
-        .update({ lscore: lscore || 0, vscore: vscore || 0 })
+        .update(campos)
+        .eq('id', id)
+        .select()
+    ).pipe(
+      map(({ data, error }: any) => {
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Juego no encontrado');
+        if (data[0]?.semana) {
+          this.juegosPorSemanaCache.delete(data[0].semana);
+        }
+        return data[0] as Juego;
+      })
+    );
+  }
+
+  actualizarScores(id: string, lscore: number | null, vscore: number | null): Observable<Juego> {
+    return from(
+      this.supabaseClient
+        .from('juegos')
+        .update({ lscore: lscore ?? null, vscore: vscore ?? null })
         .eq('id', id)
         .select()
     ).pipe(

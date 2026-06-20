@@ -114,6 +114,20 @@ table {
   padding: 16px 0px;
 }
 
+.edit-field {
+  width: 110px;
+  padding: 16px 0px;
+}
+
+.editable-cell {
+  cursor: pointer;
+}
+
+.editable-cell:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+
 .score-field .mat-form-field-wrapper {
   margin: 0;
   padding: 0;

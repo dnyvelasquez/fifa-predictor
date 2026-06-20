@@ -122,36 +122,105 @@
             <table mat-table [dataSource]="juegos" class="mat-elevation-z8">
               <ng-container matColumnDef="local">
                 <th mat-header-cell *matHeaderCellDef> Local </th>
-                <td mat-cell *matCellDef="let juego"> {{juego.local}} </td>
+                <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'local')">
+                  @if (isEditing(juego, 'local')) {
+                    <mat-form-field appearance="fill" class="edit-field">
+                      <mat-select [(ngModel)]="editValue" name="edit-local-{{juego.id}}"
+                                  (selectionChange)="saveEdit(juego, 'local')"
+                                  (blur)="cancelEdit()"
+                                  (keydown.escape)="cancelEdit()">
+                        @for (e of opcionesEquipoEdicion(juego.local); track e.id) {
+                          <mat-option [value]="e.nombre">{{ e.nombre }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    {{juego.local}}
+                  }
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="visitante">
                 <th mat-header-cell *matHeaderCellDef> Visitante </th>
-                <td mat-cell *matCellDef="let juego"> {{juego.visitante}} </td>
+                <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'visitante')">
+                  @if (isEditing(juego, 'visitante')) {
+                    <mat-form-field appearance="fill" class="edit-field">
+                      <mat-select [(ngModel)]="editValue" name="edit-visitante-{{juego.id}}"
+                                  (selectionChange)="saveEdit(juego, 'visitante')"
+                                  (blur)="cancelEdit()"
+                                  (keydown.escape)="cancelEdit()">
+                        @for (e of opcionesEquipoEdicion(juego.visitante); track e.id) {
+                          <mat-option [value]="e.nombre">{{ e.nombre }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    {{juego.visitante}}
+                  }
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="fase">
                 <th mat-header-cell *matHeaderCellDef> Fase </th>
-                <td mat-cell *matCellDef="let juego"> {{juego.fase}} </td>
+                <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'fase')">
+                  @if (isEditing(juego, 'fase')) {
+                    <mat-form-field appearance="fill" class="edit-field">
+                      <mat-select [(ngModel)]="editValue" name="edit-fase-{{juego.id}}"
+                                  (selectionChange)="saveEdit(juego, 'fase')"
+                                  (blur)="cancelEdit()"
+                                  (keydown.escape)="cancelEdit()">
+                        @for (fase of fases; track fase) {
+                          <mat-option [value]="fase">{{ fase }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    {{juego.fase}}
+                  }
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="fecha">
                 <th mat-header-cell *matHeaderCellDef> Fecha </th>
-                <td mat-cell *matCellDef="let juego"> {{juego.fecha}} </td>
+                <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'fecha')">
+                  @if (isEditing(juego, 'fecha')) {
+                    <mat-form-field appearance="fill" class="edit-field">
+                      <input matInput [(ngModel)]="editValue" name="edit-fecha-{{juego.id}}"
+                             placeholder="AAAA/MM/DD"
+                             (blur)="cancelEdit()"
+                             (keydown.enter)="saveEdit(juego, 'fecha')"
+                             (keydown.escape)="cancelEdit()">
+                    </mat-form-field>
+                  } @else {
+                    {{juego.fecha}}
+                  }
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="hora">
                 <th mat-header-cell *matHeaderCellDef> Hora </th>
-                <td mat-cell *matCellDef="let juego"> {{juego.hora}} </td>
+                <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'hora')">
+                  @if (isEditing(juego, 'hora')) {
+                    <mat-form-field appearance="fill" class="edit-field">
+                      <input matInput [(ngModel)]="editValue" name="edit-hora-{{juego.id}}"
+                             placeholder="HH:mm"
+                             (blur)="cancelEdit()"
+                             (keydown.enter)="saveEdit(juego, 'hora')"
+                             (keydown.escape)="cancelEdit()">
+                    </mat-form-field>
+                  } @else {
+                    {{juego.hora}}
+                  }
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="lscore">
                 <th mat-header-cell *matHeaderCellDef> Score Local </th>
                 <td mat-cell *matCellDef="let juego">
                   <mat-form-field appearance="fill" class="score-field">
-                    <input matInput type="number" [value]="juego.lscore" 
-                           (change)="actualizarScore(juego, $event.target.value, juego.vscore)"
-                           placeholder="0" min="0">
+                    <input matInput type="number" [(ngModel)]="juego.lscore"
+                           name="lscore-{{juego.id}}"
+                           placeholder="-" min="0">
                   </mat-form-field>
                 </td>
               </ng-container>
@@ -160,9 +229,9 @@
                 <th mat-header-cell *matHeaderCellDef> Score Visitante </th>
                 <td mat-cell *matCellDef="let juego">
                   <mat-form-field appearance="fill" class="score-field">
-                    <input matInput type="number" [value]="juego.vscore" 
-                           (change)="actualizarScore(juego, juego.lscore, $event.target.value)"
-                           placeholder="0" min="0">
+                    <input matInput type="number" [(ngModel)]="juego.vscore"
+                           name="vscore-{{juego.id}}"
+                           placeholder="-" min="0">
                   </mat-form-field>
                 </td>
               </ng-container>
@@ -170,6 +239,9 @@
               <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef> Acciones </th>
                 <td mat-cell *matCellDef="let juego">
+                  <button mat-icon-button color="primary" (click)="actualizarScore(juego)" [disabled]="saving" aria-label="Actualizar">
+                    <mat-icon>update</mat-icon>
+                  </button>
                   <button mat-icon-button color="warn" (click)="eliminarJuego(juego.id)" aria-label="Eliminar">
                     <mat-icon>delete</mat-icon>
                   </button>

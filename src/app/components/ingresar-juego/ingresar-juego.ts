@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -35,7 +35,8 @@ function distintos(control: AbstractControl): ValidationErrors | null {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule, 
+    FormsModule,
+    MatCardModule,
     MatFormFieldModule, 
     MatInputModule, 
     MatSelectModule, 
@@ -74,11 +75,16 @@ export class IngresarJuego implements OnInit, OnDestroy {
   ] as const;
 
   equipos: Equipo[] = [];
+  todosEquipos: Equipo[] = [];
   juegos: Juego[] = [];
   loading = false;
   saving = false;
   errorMsg: string | null = null;
   readonly displayedColumns: string[] = ['local', 'visitante', 'fase', 'fecha', 'hora', 'lscore', 'vscore', 'acciones'];
+
+  readonly editableFields = ['local', 'visitante', 'fase', 'fecha', 'hora'] as const;
+  editingCell: { id: string; field: string } | null = null;
+  editValue: string = '';
 
   form = this.fb.group({
     visitante: ['', Validators.required],
@@ -111,6 +117,7 @@ export class IngresarJuego implements OnInit, OnDestroy {
       }),
       takeUntil(this.destroy$)
     ).subscribe(equipos => {
+      this.todosEquipos = equipos;
       this.equipos = equipos.filter(e => {
         const participante = (e.participante ?? '').trim();
         return participante && participante.toLowerCase() !== 'no asignado';
@@ -118,6 +125,14 @@ export class IngresarJuego implements OnInit, OnDestroy {
       this.checkLoadingComplete();
       this.cdr.detectChanges();
     });
+  }
+
+  opcionesEquipoEdicion(valorActual: string): Equipo[] {
+    const yaIncluido = this.equipos.some(e => e.nombre === valorActual);
+    if (yaIncluido) return this.equipos;
+
+    const actual = this.todosEquipos.find(e => e.nombre === valorActual);
+    return actual ? [actual, ...this.equipos] : this.equipos;
   }
 
   cargarJuegos(): void {
@@ -193,22 +208,102 @@ export class IngresarJuego implements OnInit, OnDestroy {
     }
   }
 
-  async actualizarScore(juego: Juego, lscoreValue: any, vscoreValue: any): Promise<void> {
-    const lscore = parseInt(lscoreValue, 10) || 0;
-    const vscore = parseInt(vscoreValue, 10) || 0;
-    
-    if (isNaN(lscore) || isNaN(vscore)) return;
-    
+async actualizarScore(juego: Juego): Promise<void> {
+    if (this.saving) return;
+
+    const lscore = this.toScoreOrNull(juego.lscore);
+    const vscore = this.toScoreOrNull(juego.vscore);
+
+    this.saving = true;
     try {
       await this.juegosService.actualizarScores(juego.id, lscore, vscore)
         .pipe(takeUntil(this.destroy$)).toPromise();
-      
-      this.showMessage(`Score actualizado: ${juego.local} ${lscore} - ${vscore} ${juego.visitante}`, 'success');
-      await this.cargarJuegos();
-      
+
+      juego.lscore = lscore;
+      juego.vscore = vscore;
+
+      this.showMessage(`Score actualizado: ${juego.local} ${lscore ?? '-'} - ${vscore ?? '-'} ${juego.visitante}`, 'success');
     } catch (err: any) {
       this.errorMsg = err?.message || 'No fue posible actualizar el score';
       this.showMessage(this.errorMsg, 'error');
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private toScoreOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = parseInt(value, 10);
+    return isNaN(n) ? null : n;
+  }
+
+  isEditing(juego: Juego, field: string): boolean {
+    return this.editingCell?.id === juego.id && this.editingCell?.field === field;
+  }
+
+  startEdit(juego: Juego, field: string): void {
+    if (this.saving) return;
+    this.editingCell = { id: juego.id, field };
+    this.editValue = String((juego as any)[field] ?? '');
+    this.cdr.detectChanges();
+  }
+
+  cancelEdit(): void {
+    this.editingCell = null;
+    this.editValue = '';
+    this.cdr.detectChanges();
+  }
+
+  async saveEdit(juego: Juego, field: string): Promise<void> {
+    if (!this.isEditing(juego, field)) return;
+
+    const valorActual = String((juego as any)[field] ?? '');
+    const nuevoValor = this.editValue.trim();
+
+    if (!nuevoValor) {
+      this.showMessage('El campo no puede quedar vacío', 'error');
+      return;
+    }
+
+    if (field === 'hora' && !/^([01]\d|2[0-3]):[0-5]\d$/.test(nuevoValor)) {
+      this.showMessage('Formato de hora inválido. Usa HH:mm (24h)', 'error');
+      return;
+    }
+
+    if (field === 'fecha') {
+      const fechaParseada = this.parseYYYYMMDD(nuevoValor);
+      if (!fechaParseada) {
+        this.showMessage('Formato de fecha inválido. Usa AAAA/MM/DD', 'error');
+        return;
+      }
+    }
+
+    if ((field === 'local' && nuevoValor === juego.visitante) ||
+        (field === 'visitante' && nuevoValor === juego.local)) {
+      this.showMessage('Local y visitante no pueden ser el mismo equipo', 'error');
+      return;
+    }
+
+    if (nuevoValor === valorActual) {
+      this.cancelEdit();
+      return;
+    }
+
+    this.saving = true;
+    try {
+      await this.juegosService.actualizarCampos(juego.id, { [field]: nuevoValor } as any)
+        .pipe(takeUntil(this.destroy$)).toPromise();
+
+      (juego as any)[field] = nuevoValor;
+      this.showMessage('Juego actualizado correctamente', 'success');
+      this.cancelEdit();
+    } catch (err: any) {
+      this.errorMsg = err?.message || 'No fue posible actualizar el juego';
+      this.showMessage(this.errorMsg, 'error');
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
     }
   }
 
