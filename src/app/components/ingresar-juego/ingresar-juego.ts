@@ -118,10 +118,7 @@ export class IngresarJuego implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(equipos => {
       this.todosEquipos = equipos;
-      this.equipos = equipos.filter(e => {
-        const participante = (e.participante ?? '').trim();
-        return participante && participante.toLowerCase() !== 'no asignado';
-      });
+      this.equipos = equipos;
       this.checkLoadingComplete();
       this.cdr.detectChanges();
     });
