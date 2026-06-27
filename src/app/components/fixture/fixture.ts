@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { Observable, Subject, combineLatest, of } from 'rxjs';
 import { takeUntil, catchError, finalize } from 'rxjs/operators';
-import { EquiposService, GrupoEquipos, EquiposEspeciales } from '../../services/equipos';
+import { EquiposService, GrupoEquipos, EquiposEspeciales, Equipo } from '../../services/equipos';
 
 @Component({
   selector: 'app-fixture',
@@ -59,16 +59,33 @@ export class Fixture implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (result) => {
-        this.grupos = result.grupos;
+        this.grupos = result.grupos.map(grupo => ({
+          ...grupo,
+          equipos: [...grupo.equipos].sort((a, b) => this.ordenClasificacion(a) - this.ordenClasificacion(b))
+        }));
         this.especiales = result.especiales;
       }
     });
   }
-  
+
+  private ordenClasificacion(equipo: Equipo): number {
+    if (equipo.e32 === '1') return 0;
+    if (equipo.e32 === '2') return 1;
+    if (equipo.e32?.startsWith('3-')) return 2;
+    return 3;
+  }
+
+  claseClasificacion(equipo: Equipo): string {
+    if (equipo.e32 === '1') return 'primero-grupo';
+    if (equipo.e32 === '2') return 'segundo-grupo';
+    if (equipo.e32?.startsWith('3-')) return 'mejor-tercero';
+    return '';
+  }
+
   trackByGrupo(index: number, grupo: GrupoEquipos): string {
     return grupo.nombre;
   }
-  
+
   trackByEquipo(index: number, equipo: any): string {
     return equipo?.id || index.toString();
   }

@@ -21,7 +21,7 @@
             </div>
           </div>
           @for (equipo of grupo.equipos; track equipo.id) {
-            <div class="equipo-row">
+            <div class="equipo-row" [ngClass]="claseClasificacion(equipo)">
               <div class="equipo-info">
                 <img [src]="equipo.logo" [alt]="equipo.nombre" class="equipo-logo" loading="lazy">
                 <div class="equipo-nombre-container">

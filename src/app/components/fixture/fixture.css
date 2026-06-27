@@ -52,7 +52,20 @@
   align-items: center;
   padding: 12px;
   border-bottom: 1px solid #f0f0f0;
+  border-left: 4px solid transparent;
   transition: background-color 0.2s;
+}
+
+.equipo-row.primero-grupo {
+  border-left-color: #1565c0;
+}
+
+.equipo-row.segundo-grupo {
+  border-left-color: #c62828;
+}
+
+.equipo-row.mejor-tercero {
+  border-left-color: #fbc02d;
 }
 
 .equipo-row:hover {
