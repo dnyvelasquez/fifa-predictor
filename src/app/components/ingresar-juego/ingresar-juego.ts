@@ -19,7 +19,7 @@ import { Subject, of } from 'rxjs';
 import { takeUntil, catchError, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
-import { JuegosService, Juego } from '../../services/juegos';
+import { JuegosService, Juego, FASES_ELIMINATORIAS } from '../../services/juegos';
 import { EquiposService, Equipo } from '../../services/equipos';
 
 function distintos(control: AbstractControl): ValidationErrors | null {
@@ -80,7 +80,11 @@ export class IngresarJuego implements OnInit, OnDestroy {
   loading = false;
   saving = false;
   errorMsg: string | null = null;
-  readonly displayedColumns: string[] = ['local', 'visitante', 'fase', 'fecha', 'hora', 'lscore', 'vscore', 'acciones'];
+  readonly displayedColumns: string[] = [
+    'local', 'visitante', 'fase', 'posicion', 'fecha', 'hora',
+    'lscore', 'vscore', 'lroja', 'lamarilla', 'vroja', 'vamarilla', 'lpenales', 'vpenales',
+    'acciones'
+  ];
 
   readonly editableFields = ['local', 'visitante', 'fase', 'fecha', 'hora'] as const;
   editingCell: { id: string; field: string } | null = null;
@@ -90,6 +94,7 @@ export class IngresarJuego implements OnInit, OnDestroy {
     visitante: ['', Validators.required],
     local: ['', Validators.required],
     fase: ['', Validators.required],
+    posicion: [null as number | null],
     fecha: [null as Date | null, Validators.required],
     hora: ['', [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)]],
   }, { validators: [distintos] });
@@ -122,6 +127,21 @@ export class IngresarJuego implements OnInit, OnDestroy {
       this.checkLoadingComplete();
       this.cdr.detectChanges();
     });
+  }
+
+  esFaseEliminatoria(fase: string | null | undefined): boolean {
+    return !!fase && fase !== 'Fase de Grupos';
+  }
+
+  posicionesDisponibles(fase: string | null | undefined): number[] {
+    const total = FASES_ELIMINATORIAS[fase ?? ''] ?? 0;
+    if (!total) return [];
+
+    const usadas = new Set(
+      this.juegos.filter(j => j.fase === fase && j.posicion != null).map(j => j.posicion)
+    );
+
+    return Array.from({ length: total }, (_, i) => i + 1).filter(n => !usadas.has(n));
   }
 
   opcionesEquipoEdicion(valorActual: string): Equipo[] {
@@ -176,10 +196,15 @@ export class IngresarJuego implements OnInit, OnDestroy {
       return;
     }
     
+    const { visitante, local, fase, posicion, fecha, hora } = this.form.value;
+
+    if (this.esFaseEliminatoria(fase) && !posicion) {
+      this.showMessage('Selecciona la posición del fixture para esta fase', 'error');
+      return;
+    }
+
     this.saving = true;
     this.errorMsg = null;
-
-    const { visitante, local, fase, fecha, hora } = this.form.value;
 
     try {
       const fechaStr = this.formatYYYYMMDD(fecha as Date);
@@ -190,6 +215,7 @@ export class IngresarJuego implements OnInit, OnDestroy {
         fase: String(fase),
         fecha: fechaStr,
         hora: String(hora),
+        posicion: this.esFaseEliminatoria(fase) ? Number(posicion) : null,
       }).pipe(takeUntil(this.destroy$)).toPromise();
 
       this.form.reset();
@@ -211,19 +237,29 @@ async actualizarScore(juego: Juego): Promise<void> {
 
     const lscore = this.toScoreOrNull(juego.lscore);
     const vscore = this.toScoreOrNull(juego.vscore);
+    const lpenales = this.toScoreOrNull(juego.lpenales);
+    const vpenales = this.toScoreOrNull(juego.vpenales);
 
     this.saving = true;
     try {
-      await this.juegosService.actualizarScores(juego.id, lscore, vscore)
-        .pipe(takeUntil(this.destroy$)).toPromise();
+      await this.juegosService.actualizarResultado(juego.id, {
+        lscore, vscore,
+        lroja: this.toScoreOrNull(juego.lroja) ?? 0,
+        lamarilla: this.toScoreOrNull(juego.lamarilla) ?? 0,
+        vroja: this.toScoreOrNull(juego.vroja) ?? 0,
+        vamarilla: this.toScoreOrNull(juego.vamarilla) ?? 0,
+        lpenales, vpenales,
+      }).pipe(takeUntil(this.destroy$)).toPromise();
 
       juego.lscore = lscore;
       juego.vscore = vscore;
+      juego.lpenales = lpenales;
+      juego.vpenales = vpenales;
 
       await this.recalcularPuntajes();
-      this.showMessage(`Score actualizado: ${juego.local} ${lscore ?? '-'} - ${vscore ?? '-'} ${juego.visitante}`, 'success');
+      this.showMessage(`Resultado actualizado: ${juego.local} ${lscore ?? '-'} - ${vscore ?? '-'} ${juego.visitante}`, 'success');
     } catch (err: any) {
-      this.errorMsg = err?.message || 'No fue posible actualizar el score';
+      this.errorMsg = err?.message || 'No fue posible actualizar el resultado';
       this.showMessage(this.errorMsg, 'error');
     } finally {
       this.saving = false;

@@ -17,9 +17,6 @@
       <button class="left" mat-icon-button routerLink="/admin" aria-label="Volver">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <button mat-stroked-button class="reset" (click)="resetAll()" [disabled]="saving()">
-        <mat-icon>restart_alt</mat-icon>&nbsp;Reset
-      </button>
       <button class="right" mat-icon-button (click)="logout()" aria-label="Logout">
         <mat-icon>logout</mat-icon>
       </button>
@@ -61,71 +58,11 @@
                   </td>
                 }
                 <td class="equipo-cell">{{ equipo.nombre }}</td>
-                <td class="select-cell">
-                  <mat-select 
-                    [value]="equipo.e32" 
-                    (valueChange)="updateEquipo(equipo, 'e32', $event)"
-                    [disabled]="saving()">
-                    <mat-option value="">-- Seleccionar --</mat-option>
-                    @for (opt of e32Options; track opt) {
-                      <mat-option [value]="opt" [disabled]="isOptionDisabled('e32', opt, equipo)">
-                        {{ opt }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </td>
-                <td class="select-cell">
-                  <mat-select 
-                    [value]="equipo.of" 
-                    (valueChange)="updateEquipo(equipo, 'of', $event)"
-                    [disabled]="saving() || !equipo.e32">
-                    <mat-option value="">-- Seleccionar --</mat-option>
-                    @for (opt of ofOptions(); track opt) {
-                      <mat-option [value]="opt" [disabled]="isOptionDisabled('of', opt, equipo)">
-                        {{ opt }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </td>
-                <td class="select-cell">
-                  <mat-select 
-                    [value]="equipo.cf" 
-                    (valueChange)="updateEquipo(equipo, 'cf', $event)"
-                    [disabled]="saving() || !equipo.of">
-                    <mat-option value="">-- Seleccionar --</mat-option>
-                    @for (opt of cfOptions(); track opt) {
-                      <mat-option [value]="opt" [disabled]="isOptionDisabled('cf', opt, equipo)">
-                        {{ opt }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </td>
-                <td class="select-cell">
-                  <mat-select 
-                    [value]="equipo.sf" 
-                    (valueChange)="updateEquipo(equipo, 'sf', $event)"
-                    [disabled]="saving() || !equipo.cf">
-                    <mat-option value="">-- Seleccionar --</mat-option>
-                    @for (opt of sfOptions(); track opt) {
-                      <mat-option [value]="opt" [disabled]="isOptionDisabled('sf', opt, equipo)">
-                        {{ opt }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </td>
-                <td class="select-cell">
-                  <mat-select 
-                    [value]="equipo.gf" 
-                    (valueChange)="updateEquipo(equipo, 'gf', $event)"
-                    [disabled]="saving() || !equipo.sf">
-                    <mat-option value="">-- Seleccionar --</mat-option>
-                    @for (opt of gfOptions(); track opt) {
-                      <mat-option [value]="opt" [disabled]="isOptionDisabled('gf', opt, equipo)">
-                        {{ opt }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </td>
+                <td class="select-cell">{{ equipo.e32 || '-' }}</td>
+                <td class="select-cell">{{ equipo.of || '-' }}</td>
+                <td class="select-cell">{{ equipo.cf || '-' }}</td>
+                <td class="select-cell">{{ equipo.sf || '-' }}</td>
+                <td class="select-cell">{{ equipo.gf || '-' }}</td>
               </tr>
             }
           }

@@ -14,11 +14,27 @@ export interface Juego {
   actual: boolean;
   lscore: number | null;
   vscore: number | null;
+  posicion: number | null;
+  lroja: number;
+  lamarilla: number;
+  vroja: number;
+  vamarilla: number;
+  lpenales: number | null;
+  vpenales: number | null;
   logoVisitante?: string;
   logoLocal?: string;
   participanteVisitante?: string;
   participanteLocal?: string;
 }
+
+/** Fases eliminatorias y la cantidad de posiciones de bracket que tiene cada una. */
+export const FASES_ELIMINATORIAS: Record<string, number> = {
+  'Eliminatoria 32': 16,
+  'Octavos de Final': 8,
+  'Cuartos de Final': 4,
+  'Semifinal': 2,
+  'Final': 1,
+};
 
 export interface GrupoJuegos {
   fecha: string;
@@ -238,7 +254,7 @@ export class JuegosService {
     );
   }
 
-  crearJuego(input: { visitante: string; local: string; fase: string; fecha: string; hora: string }): Observable<any> {
+  crearJuego(input: { visitante: string; local: string; fase: string; fecha: string; hora: string; posicion?: number | null }): Observable<any> {
     return forkJoin({
       nextId: this.getNextJuegoId(),
       semanaId: this.getSemanaIdPorFecha(input.fecha),
@@ -255,6 +271,7 @@ export class JuegosService {
               fase: input.fase,
               fecha: input.fecha,
               hora: input.hora,
+              posicion: input.posicion ?? null,
             }])
             .select()
         )
@@ -291,7 +308,7 @@ export class JuegosService {
     );
   }
 
-  actualizarCampos(id: string, campos: Partial<Pick<Juego, 'local' | 'visitante' | 'fase' | 'fecha' | 'hora'>>): Observable<Juego> {
+  actualizarCampos(id: string, campos: Partial<Pick<Juego, 'local' | 'visitante' | 'fase' | 'fecha' | 'hora' | 'posicion'>>): Observable<Juego> {
     return from(
       this.supabaseClient
         .from('juegos')
@@ -310,11 +327,29 @@ export class JuegosService {
     );
   }
 
-  actualizarScores(id: string, lscore: number | null, vscore: number | null): Observable<Juego> {
+  actualizarResultado(id: string, resultado: {
+    lscore: number | null;
+    vscore: number | null;
+    lroja?: number | null;
+    lamarilla?: number | null;
+    vroja?: number | null;
+    vamarilla?: number | null;
+    lpenales?: number | null;
+    vpenales?: number | null;
+  }): Observable<Juego> {
     return from(
       this.supabaseClient
         .from('juegos')
-        .update({ lscore: lscore ?? null, vscore: vscore ?? null })
+        .update({
+          lscore: resultado.lscore ?? null,
+          vscore: resultado.vscore ?? null,
+          lroja: resultado.lroja ?? 0,
+          lamarilla: resultado.lamarilla ?? 0,
+          vroja: resultado.vroja ?? 0,
+          vamarilla: resultado.vamarilla ?? 0,
+          lpenales: resultado.lpenales ?? null,
+          vpenales: resultado.vpenales ?? null,
+        })
         .eq('id', id)
         .select()
     ).pipe(
@@ -329,8 +364,15 @@ export class JuegosService {
     );
   }
 
+  /**
+   * Recalcula desde cero, a partir de todos los juegos con marcador registrado:
+   * - pg/pe/pp/p32/po/pc/ps/pf (conteos de resultados por fase)
+   * - e32 (clasificación de grupos: 1ros, 2dos y los 8 mejores terceros, con desempates)
+   * - of/cf/sf/gf (avance de eliminatorias: el ganador de cada cruce toma la posición
+   *   de bracket ya establecida para ese partido; el desempate en eliminatorias es por penales)
+   */
   recalcularPuntajesEquipos(): Observable<{ ok: true }> {
-    const faseFieldMap: Record<string, 'p32' | 'po' | 'pc' | 'ps' | 'pf'> = {
+    const fasePuntajeMap: Record<string, 'p32' | 'po' | 'pc' | 'ps' | 'pf'> = {
       'Eliminatoria 32': 'p32',
       'Octavos de Final': 'po',
       'Cuartos de Final': 'pc',
@@ -338,12 +380,22 @@ export class JuegosService {
       'Final': 'pf',
     };
 
-    type Stats = { pg: number; pe: number; pp: number; p32: number; po: number; pc: number; ps: number; pf: number };
-    const statsVacias = (): Stats => ({ pg: 0, pe: 0, pp: 0, p32: 0, po: 0, pc: 0, ps: 0, pf: 0 });
+    const faseAvanceMap: Record<string, 'of' | 'cf' | 'sf' | 'gf'> = {
+      'Eliminatoria 32': 'of',
+      'Octavos de Final': 'cf',
+      'Cuartos de Final': 'sf',
+      'Semifinal': 'gf',
+    };
+
+    type Stats = {
+      pg: number; pe: number; pp: number; p32: number; po: number; pc: number; ps: number; pf: number;
+      dg: number; gf: number; rojas: number; amarillas: number;
+    };
+    const statsVacias = (): Stats => ({ pg: 0, pe: 0, pp: 0, p32: 0, po: 0, pc: 0, ps: 0, pf: 0, dg: 0, gf: 0, rojas: 0, amarillas: 0 });
 
     return forkJoin({
-      juegos: from(this.supabaseClient.from('juegos').select('local,visitante,fase,lscore,vscore')),
-      equipos: from(this.supabaseClient.from('equipos').select('id,nombre')),
+      juegos: from(this.supabaseClient.from('juegos').select('local,visitante,fase,lscore,vscore,posicion,lroja,lamarilla,vroja,vamarilla,lpenales,vpenales')),
+      equipos: from(this.supabaseClient.from('equipos').select('id,nombre,grupo')),
     }).pipe(
       switchMap(({ juegos, equipos }: any) => {
         if (juegos.error) throw juegos.error;
@@ -351,6 +403,11 @@ export class JuegosService {
 
         const stats: Record<string, Stats> = {};
         const getStats = (nombre: string): Stats => stats[nombre] ??= statsVacias();
+
+        const avance: Record<string, Partial<Record<'of' | 'cf' | 'sf' | 'gf', string>>> = {};
+        const setAvance = (nombre: string, campo: 'of' | 'cf' | 'sf' | 'gf', valor: string) => {
+          (avance[nombre] ??= {})[campo] = valor;
+        };
 
         for (const j of (juegos.data ?? [])) {
           if (j.lscore === null || j.lscore === undefined || j.vscore === null || j.vscore === undefined) continue;
@@ -361,27 +418,95 @@ export class JuegosService {
           const visitanteStats = getStats(j.visitante);
 
           if (j.fase === 'Fase de Grupos') {
+            localStats.gf += lscore;
+            visitanteStats.gf += vscore;
+            localStats.dg += lscore - vscore;
+            visitanteStats.dg += vscore - lscore;
+            localStats.rojas += Number(j.lroja ?? 0);
+            visitanteStats.rojas += Number(j.vroja ?? 0);
+            localStats.amarillas += Number(j.lamarilla ?? 0);
+            visitanteStats.amarillas += Number(j.vamarilla ?? 0);
+
             if (lscore > vscore) { localStats.pg++; visitanteStats.pp++; }
             else if (lscore < vscore) { visitanteStats.pg++; localStats.pp++; }
             else { localStats.pe++; visitanteStats.pe++; }
             continue;
           }
 
-          const campo = faseFieldMap[j.fase];
-          if (!campo) continue;
+          const campoPuntaje = fasePuntajeMap[j.fase];
+          if (campoPuntaje) {
+            if (lscore > vscore) localStats[campoPuntaje]++;
+            else if (lscore < vscore) visitanteStats[campoPuntaje]++;
+          }
 
-          if (lscore > vscore) localStats[campo]++;
-          else if (lscore < vscore) visitanteStats[campo]++;
+          const campoAvance = faseAvanceMap[j.fase];
+          if (campoAvance && j.posicion) {
+            let ganador: string | null = null;
+            if (lscore > vscore) ganador = j.local;
+            else if (lscore < vscore) ganador = j.visitante;
+            else {
+              const lp = j.lpenales, vp = j.vpenales;
+              if (lp !== null && lp !== undefined && vp !== null && vp !== undefined && Number(lp) !== Number(vp)) {
+                ganador = Number(lp) > Number(vp) ? j.local : j.visitante;
+              }
+            }
+            if (ganador) setAvance(ganador, campoAvance, String(j.posicion));
+          }
         }
 
-        const updates = (equipos.data ?? []).map((e: any) =>
-          from(
+        // Criterios de desempate de grupo: puntos, diferencia de goles, goles a favor,
+        // partidos ganados, menos tarjetas rojas, menos tarjetas amarillas.
+        const compararEquipos = (nombreA: string, nombreB: string): number => {
+          const a = stats[nombreA] ?? statsVacias();
+          const b = stats[nombreB] ?? statsVacias();
+          const ptsA = a.pg * 3 + a.pe;
+          const ptsB = b.pg * 3 + b.pe;
+          if (ptsB !== ptsA) return ptsB - ptsA;
+          if (b.dg !== a.dg) return b.dg - a.dg;
+          if (b.gf !== a.gf) return b.gf - a.gf;
+          if (b.pg !== a.pg) return b.pg - a.pg;
+          if (a.rojas !== b.rojas) return a.rojas - b.rojas;
+          if (a.amarillas !== b.amarillas) return a.amarillas - b.amarillas;
+          return 0;
+        };
+
+        const porGrupo: Record<string, string[]> = {};
+        for (const e of (equipos.data ?? [])) {
+          (porGrupo[e.grupo] ??= []).push(e.nombre);
+        }
+
+        const e32PorEquipo: Record<string, string> = {};
+        const terceros: string[] = [];
+
+        for (const nombresGrupo of Object.values(porGrupo)) {
+          const ordenados = [...nombresGrupo].sort(compararEquipos);
+          if (ordenados[0]) e32PorEquipo[ordenados[0]] = '1';
+          if (ordenados[1]) e32PorEquipo[ordenados[1]] = '2';
+          if (ordenados[2]) terceros.push(ordenados[2]);
+        }
+
+        terceros.sort(compararEquipos);
+        terceros.slice(0, 8).forEach((nombre, i) => {
+          e32PorEquipo[nombre] = `3-${i + 1}`;
+        });
+
+        const updates = (equipos.data ?? []).map((e: any) => {
+          const s = stats[e.nombre] ?? statsVacias();
+          const av = avance[e.nombre] ?? {};
+          return from(
             this.supabaseClient
               .from('equipos')
-              .update(stats[e.nombre] ?? statsVacias())
+              .update({
+                pg: s.pg, pe: s.pe, pp: s.pp, p32: s.p32, po: s.po, pc: s.pc, ps: s.ps, pf: s.pf,
+                e32: e32PorEquipo[e.nombre] ?? '',
+                of: av.of ?? '',
+                cf: av.cf ?? '',
+                sf: av.sf ?? '',
+                gf: av.gf ?? '',
+              })
               .eq('id', e.id)
-          )
-        );
+          );
+        });
 
         if (!updates.length) return of({ ok: true as const });
         return forkJoin(updates).pipe(map(() => ({ ok: true as const })));

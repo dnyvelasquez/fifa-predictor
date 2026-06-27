@@ -70,6 +70,17 @@
               }
             </mat-form-field>
 
+            @if (esFaseEliminatoria(f.fase.value)) {
+              <mat-form-field appearance="fill">
+                <mat-label>Posición en el fixture</mat-label>
+                <mat-select formControlName="posicion">
+                  @for (pos of posicionesDisponibles(f.fase.value); track pos) {
+                    <mat-option [value]="pos">{{ pos }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+
             <mat-form-field appearance="fill">
               <mat-label>Fecha (AAAA/MM/DD)</mat-label>
               <input
@@ -180,6 +191,13 @@
                 </td>
               </ng-container>
 
+              <ng-container matColumnDef="posicion">
+                <th mat-header-cell *matHeaderCellDef> Posición </th>
+                <td mat-cell *matCellDef="let juego">
+                  {{ juego.posicion ?? '-' }}
+                </td>
+              </ng-container>
+
               <ng-container matColumnDef="fecha">
                 <th mat-header-cell *matHeaderCellDef> Fecha </th>
                 <td mat-cell *matCellDef="let juego" class="editable-cell" (dblclick)="startEdit(juego, 'fecha')">
@@ -233,6 +251,70 @@
                            name="vscore-{{juego.id}}"
                            placeholder="-" min="0">
                   </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lroja">
+                <th mat-header-cell *matHeaderCellDef> Roja L </th>
+                <td mat-cell *matCellDef="let juego">
+                  <mat-form-field appearance="fill" class="score-field">
+                    <input matInput type="number" [(ngModel)]="juego.lroja"
+                           name="lroja-{{juego.id}}" placeholder="0" min="0">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lamarilla">
+                <th mat-header-cell *matHeaderCellDef> Amarilla L </th>
+                <td mat-cell *matCellDef="let juego">
+                  <mat-form-field appearance="fill" class="score-field">
+                    <input matInput type="number" [(ngModel)]="juego.lamarilla"
+                           name="lamarilla-{{juego.id}}" placeholder="0" min="0">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="vroja">
+                <th mat-header-cell *matHeaderCellDef> Roja V </th>
+                <td mat-cell *matCellDef="let juego">
+                  <mat-form-field appearance="fill" class="score-field">
+                    <input matInput type="number" [(ngModel)]="juego.vroja"
+                           name="vroja-{{juego.id}}" placeholder="0" min="0">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="vamarilla">
+                <th mat-header-cell *matHeaderCellDef> Amarilla V </th>
+                <td mat-cell *matCellDef="let juego">
+                  <mat-form-field appearance="fill" class="score-field">
+                    <input matInput type="number" [(ngModel)]="juego.vamarilla"
+                           name="vamarilla-{{juego.id}}" placeholder="0" min="0">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="lpenales">
+                <th mat-header-cell *matHeaderCellDef> Penales L </th>
+                <td mat-cell *matCellDef="let juego">
+                  @if (esFaseEliminatoria(juego.fase)) {
+                    <mat-form-field appearance="fill" class="score-field">
+                      <input matInput type="number" [(ngModel)]="juego.lpenales"
+                             name="lpenales-{{juego.id}}" placeholder="-" min="0">
+                    </mat-form-field>
+                  }
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="vpenales">
+                <th mat-header-cell *matHeaderCellDef> Penales V </th>
+                <td mat-cell *matCellDef="let juego">
+                  @if (esFaseEliminatoria(juego.fase)) {
+                    <mat-form-field appearance="fill" class="score-field">
+                      <input matInput type="number" [(ngModel)]="juego.vpenales"
+                             name="vpenales-{{juego.id}}" placeholder="-" min="0">
+                    </mat-form-field>
+                  }
                 </td>
               </ng-container>
 
