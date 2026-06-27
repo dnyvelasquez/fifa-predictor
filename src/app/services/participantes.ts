@@ -174,10 +174,10 @@ export class ParticipantesService {
   }
 
   resetAcumulados(): Observable<any> {
-    return from(      
+    return from(
       this.supabaseClient
         .from('participantes')
-        .update({ 
+        .update({
           acumulado: 0,
         })
         .not('id', 'is', null)

@@ -329,6 +329,66 @@ export class JuegosService {
     );
   }
 
+  recalcularPuntajesEquipos(): Observable<{ ok: true }> {
+    const faseFieldMap: Record<string, 'p32' | 'po' | 'pc' | 'ps' | 'pf'> = {
+      'Eliminatoria 32': 'p32',
+      'Octavos de Final': 'po',
+      'Cuartos de Final': 'pc',
+      'Semifinal': 'ps',
+      'Final': 'pf',
+    };
+
+    type Stats = { pg: number; pe: number; pp: number; p32: number; po: number; pc: number; ps: number; pf: number };
+    const statsVacias = (): Stats => ({ pg: 0, pe: 0, pp: 0, p32: 0, po: 0, pc: 0, ps: 0, pf: 0 });
+
+    return forkJoin({
+      juegos: from(this.supabaseClient.from('juegos').select('local,visitante,fase,lscore,vscore')),
+      equipos: from(this.supabaseClient.from('equipos').select('id,nombre')),
+    }).pipe(
+      switchMap(({ juegos, equipos }: any) => {
+        if (juegos.error) throw juegos.error;
+        if (equipos.error) throw equipos.error;
+
+        const stats: Record<string, Stats> = {};
+        const getStats = (nombre: string): Stats => stats[nombre] ??= statsVacias();
+
+        for (const j of (juegos.data ?? [])) {
+          if (j.lscore === null || j.lscore === undefined || j.vscore === null || j.vscore === undefined) continue;
+
+          const lscore = Number(j.lscore);
+          const vscore = Number(j.vscore);
+          const localStats = getStats(j.local);
+          const visitanteStats = getStats(j.visitante);
+
+          if (j.fase === 'Fase de Grupos') {
+            if (lscore > vscore) { localStats.pg++; visitanteStats.pp++; }
+            else if (lscore < vscore) { visitanteStats.pg++; localStats.pp++; }
+            else { localStats.pe++; visitanteStats.pe++; }
+            continue;
+          }
+
+          const campo = faseFieldMap[j.fase];
+          if (!campo) continue;
+
+          if (lscore > vscore) localStats[campo]++;
+          else if (lscore < vscore) visitanteStats[campo]++;
+        }
+
+        const updates = (equipos.data ?? []).map((e: any) =>
+          from(
+            this.supabaseClient
+              .from('equipos')
+              .update(stats[e.nombre] ?? statsVacias())
+              .eq('id', e.id)
+          )
+        );
+
+        if (!updates.length) return of({ ok: true as const });
+        return forkJoin(updates).pipe(map(() => ({ ok: true as const })));
+      })
+    );
+  }
+
   eliminarJuego(id: string): Observable<void> {
     return from(
       this.supabaseClient

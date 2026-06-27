@@ -195,7 +195,8 @@ export class IngresarJuego implements OnInit, OnDestroy {
       this.form.reset();
       this.showMessage('Juego creado exitosamente', 'success');
       await this.cargarJuegos();
-      
+      await this.recalcularPuntajes();
+
     } catch (err: any) {
       this.errorMsg = err?.message || 'No fue posible crear el juego';
       this.showMessage(this.errorMsg, 'error');
@@ -219,6 +220,7 @@ async actualizarScore(juego: Juego): Promise<void> {
       juego.lscore = lscore;
       juego.vscore = vscore;
 
+      await this.recalcularPuntajes();
       this.showMessage(`Score actualizado: ${juego.local} ${lscore ?? '-'} - ${vscore ?? '-'} ${juego.visitante}`, 'success');
     } catch (err: any) {
       this.errorMsg = err?.message || 'No fue posible actualizar el score';
@@ -226,6 +228,14 @@ async actualizarScore(juego: Juego): Promise<void> {
     } finally {
       this.saving = false;
       this.cdr.detectChanges();
+    }
+  }
+
+  private async recalcularPuntajes(): Promise<void> {
+    try {
+      await this.juegosService.recalcularPuntajesEquipos().pipe(takeUntil(this.destroy$)).toPromise();
+    } catch (err: any) {
+      this.showMessage(err?.message || 'No fue posible recalcular los puntajes de los equipos', 'error');
     }
   }
 
@@ -293,6 +303,11 @@ async actualizarScore(juego: Juego): Promise<void> {
         .pipe(takeUntil(this.destroy$)).toPromise();
 
       (juego as any)[field] = nuevoValor;
+
+      if (field === 'local' || field === 'visitante' || field === 'fase') {
+        await this.recalcularPuntajes();
+      }
+
       this.showMessage('Juego actualizado correctamente', 'success');
       this.cancelEdit();
     } catch (err: any) {
@@ -310,6 +325,7 @@ async actualizarScore(juego: Juego): Promise<void> {
         await this.juegosService.eliminarJuego(id).pipe(takeUntil(this.destroy$)).toPromise();
         this.showMessage('Juego eliminado correctamente', 'success');
         await this.cargarJuegos();
+        await this.recalcularPuntajes();
       } catch (err: any) {
         this.errorMsg = err?.message || 'No fue posible eliminar el juego';
         this.showMessage(this.errorMsg, 'error');

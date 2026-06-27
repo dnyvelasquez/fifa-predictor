@@ -1,9 +1,9 @@
 <div class="puntajes-container">
   <mat-card class="puntajes-card">
     <div class="header">
-      <img 
-        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75" 
-        alt="FIFA Logo" 
+      <img
+        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75"
+        alt="FIFA Logo"
         class="logo"
         loading="lazy"
         width="50"
@@ -33,7 +33,7 @@
         <mat-icon>logout</mat-icon>
       </button>
     </div>
-    
+
     @if (loading) {
       <div class="loading-container">
         <mat-spinner diameter="40"></mat-spinner>
@@ -53,46 +53,43 @@
               </div>
 
               <div class="info">
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PG</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.pg" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PE</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.pe" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PP</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.pp" />
-                </mat-form-field>
+                <div class="score-display">
+                  <span class="score-label">PG</span>
+                  <span class="score-value">{{ e.pg }}</span>
+                </div>
+                <div class="score-display">
+                  <span class="score-label">PE</span>
+                  <span class="score-value">{{ e.pe }}</span>
+                </div>
+                <div class="score-display">
+                  <span class="score-label">PP</span>
+                  <span class="score-value">{{ e.pp }}</span>
+                </div>
               </div>
               <div class="info">
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>P32</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.p32" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PO</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.po" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PC</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.pc" />
-                </mat-form-field>
+                <div class="score-display">
+                  <span class="score-label">P32</span>
+                  <span class="score-value">{{ e.p32 }}</span>
+                </div>
+                <div class="score-display">
+                  <span class="score-label">PO</span>
+                  <span class="score-value">{{ e.po }}</span>
+                </div>
+                <div class="score-display">
+                  <span class="score-label">PC</span>
+                  <span class="score-value">{{ e.pc }}</span>
+                </div>
               </div>
               <div class="info">
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PS</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.ps" />
-                </mat-form-field>
-                <mat-form-field appearance="fill" class="score">
-                  <mat-label>PF</mat-label>
-                  <input type="number" matInput placeholder="0" [(ngModel)]="e.pf" />
-                </mat-form-field>
+                <div class="score-display">
+                  <span class="score-label">PS</span>
+                  <span class="score-value">{{ e.ps }}</span>
+                </div>
+                <div class="score-display">
+                  <span class="score-label">PF</span>
+                  <span class="score-value">{{ e.pf }}</span>
+                </div>
               </div>
-              <button class="controll" mat-icon-button (click)="guardarPuntos(e)" [disabled]="saving" aria-label="Guardar">
-                <mat-icon>update</mat-icon>
-              </button>
             </div>
           </div>
         } @empty {
@@ -105,4 +102,3 @@
     }
   </mat-card>
 </div>
-

@@ -268,29 +268,11 @@ export class EquiposService {
       );
   }
 
-  actualizarPuntaje(id: string, pg: number, pe: number, pp: number, p32: number, po: number, pc: number, ps: number, pf: number): Observable<any> {
-    return from(
-      this.supabaseClient
-        .from('equipos')
-        .update({ 
-          pg: pg,
-          pe: pe,
-          pp: pp,
-          po: po,
-          p32: p32,
-          pc: pc,
-          ps: ps,
-          pf: pf,
-        })
-        .eq('id', id)
-    );
-  }  
-
   resetPuntajes(): Observable<any> {
     return from(
       this.supabaseClient
         .from('equipos')
-        .update({ 
+        .update({
           pg: 0,
           pe: 0,
           pp: 0,
