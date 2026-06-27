@@ -34,7 +34,6 @@ export class Admin {
   readonly menuItems = [
     { path: '/puntajes', icon: 'leaderboard', label: 'Puntajes' },
     { path: '/ingresar-juego', icon: 'sports_soccer', label: 'Ingresar Juego' },
-    { path: '/clasificacion', icon: 'format_list_numbered', label: 'Clasificación' },
     { path: '/participantes', icon: 'people', label: 'Participantes' },
     { path: '/asignacion', icon: 'dashboard_customize', label: 'Asignación' },
     { path: '/usuarios', icon: 'person', label: 'Usuarios' }
