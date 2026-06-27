@@ -1,59 +1,52 @@
-# FIFAPredictor
+# FIFA Predictor 2026
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+Aplicación para gestionar una quiniela/pool de predicciones del Mundial de Fútbol 2026: asignación de equipos a participantes, registro de marcadores de partidos, cálculo automático de puntajes y tabla de posiciones.
 
-## Development server
+Construida con Angular 20 (componentes standalone, zoneless, SSR) y [Supabase](https://supabase.com) (Postgres + Auth + Edge Functions).
 
-To start a local development server, run:
+## Requisitos
 
-```bash
-ng serve
-```
+- Node.js y npm
+- Una instancia de Supabase con las variables de entorno configuradas en `src/environments/environment.ts` (`supabaseUrl`, `supabaseAnonKey`)
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Desarrollo
 
 ```bash
-ng generate component component-name
+npm install
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Abre `http://localhost:4200`. La app recarga automáticamente al modificar el código fuente.
+
+## Build
 
 ```bash
-ng generate --help
+npm run build
 ```
 
-## Building
+Genera los artefactos en `dist/fifa-predictor`.
 
-To build the project run:
+Para ejecutar el servidor SSR del build de producción:
 
 ```bash
-ng build
+npm run serve:ssr:fifa-predictor
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Tests
 
 ```bash
-ng test
+npm test
 ```
 
-## Running end-to-end tests
+Ejecuta las pruebas unitarias con Karma/Jasmine.
 
-For end-to-end (e2e) testing, run:
+## Funcionalidad principal
 
-```bash
-ng e2e
-```
+- **Equipos**: catálogo de selecciones agrupadas A–L, con su avance en cada fase eliminatoria (Eliminatoria 32, Octavos, Cuartos, Semifinal, Final).
+- **Participantes**: personas inscritas en la quiniela.
+- **Asignación**: relación entre equipos y participantes.
+- **Ingresar Juego** (admin): programa partidos y registra sus marcadores. Al guardar un marcador, los puntajes de los equipos (PG/PE/PP en fase de grupos, P32/PO/PC/PS/PF en fases eliminatorias) se recalculan automáticamente.
+- **Puntajes** (admin): vista informativa de los puntajes por equipo, con acciones para acumular puntajes a los participantes o reiniciar puntajes/acumulados.
+- **Tabla de puntajes / Clasificación / Fixture**: vistas públicas de resultados y posiciones.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Para más detalle de la arquitectura interna, ver [CLAUDE.md](CLAUDE.md).
