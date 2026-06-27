@@ -45,8 +45,9 @@ Ejecuta las pruebas unitarias con Karma/Jasmine.
 - **Equipos**: catálogo de selecciones agrupadas A–L, con su avance en cada fase eliminatoria (Eliminatoria 32, Octavos, Cuartos, Semifinal, Final).
 - **Participantes**: personas inscritas en la quiniela.
 - **Asignación**: relación entre equipos y participantes.
-- **Ingresar Juego** (admin): programa partidos y registra sus marcadores. Al guardar un marcador, los puntajes de los equipos (PG/PE/PP en fase de grupos, P32/PO/PC/PS/PF en fases eliminatorias) se recalculan automáticamente.
+- **Ingresar Juego** (admin): programa partidos (con posición de bracket, tarjetas y penales para fases eliminatorias) y registra sus marcadores. Al guardar, se recalculan automáticamente: los puntajes de los equipos (PG/PE/PP en fase de grupos, P32/PO/PC/PS/PF en fases eliminatorias), la clasificación de grupos (1°, 2° y los 8 mejores terceros, con desempates por diferencia de goles, goles a favor, partidos ganados y tarjetas) y el avance de cada cruce eliminatorio según quién ganó el partido.
+- **Asignar Terceros** (admin): único paso manual — define con cuál de los 8 cruces de Eliminatoria 32 se enfrenta cada uno de los mejores terceros clasificados, ya que ese emparejamiento depende del Anexo C de FIFA y no se puede calcular automáticamente.
 - **Puntajes** (admin): vista informativa de los puntajes por equipo, con acciones para acumular puntajes a los participantes o reiniciar puntajes/acumulados.
-- **Tabla de puntajes / Clasificación / Fixture**: vistas públicas de resultados y posiciones.
+- **Tabla de puntajes / Fixture**: vistas públicas de resultados y posiciones (en Fixture, los equipos de cada grupo se ordenan y resaltan según su clasificación: azul el 1°, rojo el 2°, amarillo los mejores terceros).
 
 Para más detalle de la arquitectura interna, ver [CLAUDE.md](CLAUDE.md).
