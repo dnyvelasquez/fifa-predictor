@@ -1,0 +1,63 @@
+<div class="terceros-container">
+  <mat-card class="terceros-card">
+    <div class="header">
+      <img
+        src="https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill,height:210&quality=75"
+        alt="FIFA Logo"
+        class="logo"
+        loading="lazy"
+        width="50"
+        height="50">
+      <mat-card-title class="terceros-title">Cruces de Mejores Terceros</mat-card-title>
+      <h1 aria-hidden="true">⚽</h1>
+      <mat-divider></mat-divider>
+    </div>
+
+    <p class="ayuda">
+      El ranking (3-1 a 3-8) se calcula automáticamente. Aquí asignas manualmente con cuál
+      de los 8 cruces de Eliminatoria 32 se enfrenta cada uno, según la tabla oficial del Mundial.
+    </p>
+
+    <div class="button-container">
+      <button class="left" mat-icon-button routerLink="/admin" aria-label="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <button class="right" mat-icon-button (click)="logout()" aria-label="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando terceros clasificados...</p>
+      </div>
+    } @else {
+      <div class="terceros-list">
+        @for (equipo of terceros; track equipo.id) {
+          <div class="tercero-row">
+            <img [src]="equipo.logo" [alt]="equipo.nombre" class="equipo-logo" loading="lazy">
+            <div class="info-equipo">
+              <span class="equipo-nombre">{{ equipo.nombre }}</span>
+              <span class="equipo-rank">Ranking: {{ equipo.e32 }}</span>
+            </div>
+            <mat-form-field appearance="fill" class="pos-field">
+              <mat-label>Cruce</mat-label>
+              <mat-select [value]="equipo.tercero_pos" (valueChange)="asignar(equipo, $event)" [disabled]="saving">
+                <mat-option [value]="null">-- Sin asignar --</mat-option>
+                @for (pos of posiciones; track pos) {
+                  <mat-option [value]="pos" [disabled]="posicionDisabled(pos, equipo)">{{ pos }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        } @empty {
+          <div class="empty-container">
+            <mat-icon>sports_soccer</mat-icon>
+            <p>Aún no hay equipos clasificados como mejores terceros.</p>
+          </div>
+        }
+      </div>
+    }
+  </mat-card>
+</div>

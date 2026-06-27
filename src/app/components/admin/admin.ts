@@ -36,6 +36,7 @@ export class Admin {
     { path: '/ingresar-juego', icon: 'sports_soccer', label: 'Ingresar Juego' },
     { path: '/participantes', icon: 'people', label: 'Participantes' },
     { path: '/asignacion', icon: 'dashboard_customize', label: 'Asignación' },
+    { path: '/asignar-terceros', icon: 'rule', label: 'Cruces Terceros' },
     { path: '/usuarios', icon: 'person', label: 'Usuarios' }
   ];
   

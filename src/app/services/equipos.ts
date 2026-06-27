@@ -20,6 +20,7 @@ export interface Equipo {
   cf: string;
   sf: string;
   gf: string;
+  tercero_pos: number | null;
   logo: string;
   participante?: string;
 }
@@ -154,6 +155,7 @@ export class EquiposService {
           cf: e.cf,
           sf: e.sf,
           gf: e.gf,
+          tercero_pos: e.tercero_pos,
           participante: (participantesPorEquipo[e.id]?.join(' / ')) ?? ''
         })) as Equipo[];
       })
@@ -306,6 +308,26 @@ export class EquiposService {
     );
   }
 
+  /**
+   * Asigna manualmente en qué cruce de Eliminatoria 32 (1-8) aparece un equipo
+   * clasificado como mejor tercero. El ranking (e32 = '3-1'..'3-8') sigue siendo
+   * automático; esto solo decide contra quién se enfrenta en el fixture, ya que
+   * ese cruce depende del Anexo C de FIFA y no se puede calcular de forma fiable.
+   */
+  asignarTerceroPos(equipoId: string, pos: number | null): Observable<{ ok: true }> {
+    return from(
+      this.supabaseClient
+        .from('equipos')
+        .update({ tercero_pos: pos })
+        .eq('id', equipoId)
+    ).pipe(
+      map(({ error }: any) => {
+        if (error) throw error;
+        return { ok: true as const };
+      })
+    );
+  }
+
   cargarEquiposEspeciales(): Observable<any> {
     return this.getEquipos().pipe(
       map(equipos => {
@@ -313,21 +335,21 @@ export class EquiposService {
           if (equipo.grupo && equipo.e32) {
             acc[`${equipo.grupo}|${equipo.e32}`] = equipo;
           }
-          if (equipo.e32) acc[`e32_${equipo.e32}`] = equipo;
+          if (equipo.tercero_pos) acc[`tp_${equipo.tercero_pos}`] = equipo;
           if (equipo.of) acc[`of_${equipo.of}`] = equipo;
           if (equipo.cf) acc[`cf_${equipo.cf}`] = equipo;
           if (equipo.sf) acc[`sf_${equipo.sf}`] = equipo;
           if (equipo.gf) acc[`gf_${equipo.gf}`] = equipo;
           return acc;
         }, {} as Record<string, Equipo>);
-        
+
         const grupos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
         const numerosTres = ['Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco', 'Seis', 'Siete', 'Ocho'];
-        
+
         return {
           ...Object.fromEntries(grupos.map(g => [`uno${g}`, indices[`${g}|1`] || null])),
           ...Object.fromEntries(grupos.map(g => [`dos${g}`, indices[`${g}|2`] || null])),
-          ...Object.fromEntries(numerosTres.map((n, i) => [`tres${n}`, indices[`e32_3-${i + 1}`] || null])),
+          ...Object.fromEntries(numerosTres.map((n, i) => [`tres${n}`, indices[`tp_${i + 1}`] || null])),
           ...Object.fromEntries(Array.from({ length: 16 }, (_, i) => [`o${i + 1}`, indices[`of_${i + 1}`] || null])),
           ...Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`c${i + 1}`, indices[`cf_${i + 1}`] || null])),
           ...Object.fromEntries(Array.from({ length: 4 }, (_, i) => [`s${i + 1}`, indices[`sf_${i + 1}`] || null])),
