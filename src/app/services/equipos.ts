@@ -328,6 +328,66 @@ export class EquiposService {
     );
   }
 
+  /**
+   * Cruces fijos de Eliminatoria 32 (posiciones 1-16 del bracket), tal como se
+   * muestran en `fixture`: cada posición empareja dos selectores, donde '1<grupo>'
+   * y '2<grupo>' son el 1ro/2do de un grupo y 'T<n>' es el tercero asignado
+   * manualmente a esa posición (`tercero_pos`).
+   */
+  private static readonly CRUCES_ELIMINATORIA_32: [string, string][] = [
+    ['1E', 'T1'], ['1I', 'T2'], ['2A', '2B'], ['1F', '2C'],
+    ['2K', '2L'], ['1H', '2J'], ['1D', 'T3'], ['1G', 'T4'],
+    ['1C', '2F'], ['2E', '2I'], ['1A', 'T5'], ['1L', 'T6'],
+    ['1J', '2H'], ['2D', '2G'], ['1B', 'T7'], ['1K', 'T8'],
+  ];
+
+  private selectoresDeEquipo(equipo: Equipo): string[] {
+    const selectores: string[] = [];
+    if (equipo.e32 === '1' || equipo.e32 === '2') selectores.push(`${equipo.e32}${equipo.grupo}`);
+    if (equipo.tercero_pos) selectores.push(`T${equipo.tercero_pos}`);
+    return selectores;
+  }
+
+  private calcularPosicionEliminatoria32(local: Equipo, visitante: Equipo): number | null {
+    const selLocal = this.selectoresDeEquipo(local);
+    const selVisitante = this.selectoresDeEquipo(visitante);
+
+    const index = EquiposService.CRUCES_ELIMINATORIA_32.findIndex(([a, b]) =>
+      (selLocal.includes(a) && selVisitante.includes(b)) ||
+      (selLocal.includes(b) && selVisitante.includes(a))
+    );
+
+    return index === -1 ? null : index + 1;
+  }
+
+  /**
+   * Calcula automáticamente la posición de bracket que le corresponde a un
+   * partido eliminatorio según los equipos que se enfrentan: en Eliminatoria 32
+   * usa el cruce fijo de `fixture` (con el tercero ya asignado manualmente);
+   * en las demás fases la posición es la mitad de la posición que cada equipo
+   * ganó en la ronda anterior (of/cf/sf), ya que el bracket se reduce a la mitad
+   * en cada ronda.
+   */
+  calcularPosicionFixture(fase: string, local: Equipo, visitante: Equipo): number | null {
+    if (fase === 'Eliminatoria 32') {
+      return this.calcularPosicionEliminatoria32(local, visitante);
+    }
+
+    const campoOrigen: Record<string, 'of' | 'cf' | 'sf' | 'gf'> = {
+      'Octavos de Final': 'of',
+      'Cuartos de Final': 'cf',
+      'Semifinal': 'sf',
+      'Final': 'gf',
+    };
+    const campo = campoOrigen[fase];
+    if (!campo) return null;
+
+    if (!local[campo] || !visitante[campo]) return null;
+    if (fase === 'Final') return 1;
+
+    return Math.ceil(Number(local[campo]) / 2);
+  }
+
   cargarEquiposEspeciales(): Observable<any> {
     return this.getEquipos().pipe(
       map(equipos => {

@@ -86,6 +86,16 @@
   margin-top: 10px;
 }
 
+.posicion-info {
+  flex: 1 1 100%;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.posicion-pendiente {
+  color: #b00020;
+}
+
 .juegos-container {
   padding-top: 20px;
   border-top: 2px solid #ddd;

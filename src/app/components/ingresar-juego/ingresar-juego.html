@@ -71,14 +71,14 @@
             </mat-form-field>
 
             @if (esFaseEliminatoria(f.fase.value)) {
-              <mat-form-field appearance="fill">
-                <mat-label>Posición en el fixture</mat-label>
-                <mat-select formControlName="posicion">
-                  @for (pos of posicionesDisponibles(f.fase.value); track pos) {
-                    <mat-option [value]="pos">{{ pos }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              <div class="posicion-info">
+                Posición en el fixture:
+                @if (posicionCalculada(f.local.value, f.visitante.value, f.fase.value); as pos) {
+                  <strong>{{ pos }}</strong>
+                } @else {
+                  <span class="posicion-pendiente">no determinada — verifica que ambos equipos estén clasificados a esta fase</span>
+                }
+              </div>
             }
 
             <mat-form-field appearance="fill">

@@ -19,7 +19,7 @@ import { Subject, of } from 'rxjs';
 import { takeUntil, catchError, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth/auth';
-import { JuegosService, Juego, FASES_ELIMINATORIAS } from '../../services/juegos';
+import { JuegosService, Juego } from '../../services/juegos';
 import { EquiposService, Equipo } from '../../services/equipos';
 
 function distintos(control: AbstractControl): ValidationErrors | null {
@@ -94,7 +94,6 @@ export class IngresarJuego implements OnInit, OnDestroy {
     visitante: ['', Validators.required],
     local: ['', Validators.required],
     fase: ['', Validators.required],
-    posicion: [null as number | null],
     fecha: [null as Date | null, Validators.required],
     hora: ['', [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)]],
   }, { validators: [distintos] });
@@ -133,15 +132,14 @@ export class IngresarJuego implements OnInit, OnDestroy {
     return !!fase && fase !== 'Fase de Grupos';
   }
 
-  posicionesDisponibles(fase: string | null | undefined): number[] {
-    const total = FASES_ELIMINATORIAS[fase ?? ''] ?? 0;
-    if (!total) return [];
+  posicionCalculada(localNombre: string | null | undefined, visitanteNombre: string | null | undefined, fase: string | null | undefined): number | null {
+    if (!this.esFaseEliminatoria(fase) || !localNombre || !visitanteNombre) return null;
 
-    const usadas = new Set(
-      this.juegos.filter(j => j.fase === fase && j.posicion != null).map(j => j.posicion)
-    );
+    const equipoLocal = this.todosEquipos.find(e => e.nombre === localNombre);
+    const equipoVisitante = this.todosEquipos.find(e => e.nombre === visitanteNombre);
+    if (!equipoLocal || !equipoVisitante) return null;
 
-    return Array.from({ length: total }, (_, i) => i + 1).filter(n => !usadas.has(n));
+    return this.equiposService.calcularPosicionFixture(String(fase), equipoLocal, equipoVisitante);
   }
 
   opcionesEquipoEdicion(valorActual: string): Equipo[] {
@@ -196,10 +194,11 @@ export class IngresarJuego implements OnInit, OnDestroy {
       return;
     }
     
-    const { visitante, local, fase, posicion, fecha, hora } = this.form.value;
+    const { visitante, local, fase, fecha, hora } = this.form.value;
+    const posicion = this.posicionCalculada(local, visitante, fase);
 
     if (this.esFaseEliminatoria(fase) && !posicion) {
-      this.showMessage('Selecciona la posición del fixture para esta fase', 'error');
+      this.showMessage('No fue posible determinar la posición en el fixture para estos equipos. Verifica que ambos estén clasificados a esta fase.', 'error');
       return;
     }
 
@@ -215,7 +214,7 @@ export class IngresarJuego implements OnInit, OnDestroy {
         fase: String(fase),
         fecha: fechaStr,
         hora: String(hora),
-        posicion: this.esFaseEliminatoria(fase) ? Number(posicion) : null,
+        posicion,
       }).pipe(takeUntil(this.destroy$)).toPromise();
 
       this.form.reset();
@@ -335,10 +334,22 @@ async actualizarScore(juego: Juego): Promise<void> {
 
     this.saving = true;
     try {
-      await this.juegosService.actualizarCampos(juego.id, { [field]: nuevoValor } as any)
+      const campos: Record<string, any> = { [field]: nuevoValor };
+
+      if (field === 'local' || field === 'visitante' || field === 'fase') {
+        const local = field === 'local' ? nuevoValor : juego.local;
+        const visitante = field === 'visitante' ? nuevoValor : juego.visitante;
+        const fase = field === 'fase' ? nuevoValor : juego.fase;
+        campos['posicion'] = this.posicionCalculada(local, visitante, fase);
+      }
+
+      await this.juegosService.actualizarCampos(juego.id, campos as any)
         .pipe(takeUntil(this.destroy$)).toPromise();
 
       (juego as any)[field] = nuevoValor;
+      if (campos['posicion'] !== undefined) {
+        juego.posicion = campos['posicion'];
+      }
 
       if (field === 'local' || field === 'visitante' || field === 'fase') {
         await this.recalcularPuntajes();
