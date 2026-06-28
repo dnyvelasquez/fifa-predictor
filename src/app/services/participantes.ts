@@ -56,7 +56,7 @@ export class ParticipantesService {
                 );
                 
                 const puntajeEquipos = equiposUnicos.reduce((acc, eq) => 
-                  acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 20 + 
+                  acc + (eq.pg ?? 0) * 10 + (eq.pe ?? 0) * 5 + (eq.p32 ?? 0) * 10 + 
                   (eq.po ?? 0) * 20 + (eq.pc ?? 0) * 30 + (eq.ps ?? 0) * 40 + (eq.pf ?? 0) * 50, 0);
                 const acumulado = p.acumulado ?? 0;
                 return { 
