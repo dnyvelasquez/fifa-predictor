@@ -60,7 +60,7 @@
                       <img [src]="eq.logo" [alt]="eq.nombre" class="equipo-logo" loading="lazy" />
                       <div class="equipo-info-derecha">
                         <strong class="equipo-nombre">{{ eq.nombre }}</strong>
-                        <span class="equipo-puntaje">{{ (eq.pg || 0) * 10 + (eq.pe || 0) * 5 }} puntos</span>
+                        <span class="equipo-puntaje">{{ (eq.pg || 0) * 10 + (eq.pe || 0) * 5 + (eq.p32 || 0) * 10 + (eq.po || 0) * 20 + (eq.pc || 0) * 30 + (eq.ps || 0) * 40 + (eq.pf || 0) * 50 }} puntos</span>
                         <span class="chip-grupo">GRUPO {{ eq.grupo }}</span>
                       </div>
                     </div>
