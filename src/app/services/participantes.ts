@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, from, map, forkJoin, of, switchMap } from 'rxjs';
 import { SupabaseClientService } from './core/supabase-client';
 import { EquiposService, Equipo } from './equipos';
+import { JuegosService } from './juegos';
 
 export interface Participante {
   id: string;
@@ -22,7 +23,8 @@ export class ParticipantesService {
   
   constructor(
     private supabaseClient: SupabaseClientService,
-    private equiposService: EquiposService,  
+    private equiposService: EquiposService,
+    private juegosService: JuegosService,
   ) {}
 
   getParticipantes(): Observable<Participante[]> {
@@ -167,8 +169,20 @@ export class ParticipantesService {
             )
           );
 
-        if (!updates.length) return of({ ok: true, updated: 0 });
-        return forkJoin(updates).pipe(map(() => ({ ok: true, updated: updates.length })));
+        const guardarAcumulados$ = updates.length
+          ? forkJoin(updates).pipe(map(() => ({ updated: updates.length })))
+          : of({ updated: 0 });
+
+        // Una vez repartidos los puntos, los partidos que los generaron quedan
+        // marcados como "acumulados" para que no vuelvan a sumar en equipos.pg/pe/...
+        // en el próximo recálculo (p. ej. al ingresar un partido de otra fase).
+        return guardarAcumulados$.pipe(
+          switchMap(({ updated }) =>
+            this.juegosService.marcarJuegosAcumulados().pipe(
+              map(() => ({ ok: true, updated }))
+            )
+          )
+        );
       })
     );
   }

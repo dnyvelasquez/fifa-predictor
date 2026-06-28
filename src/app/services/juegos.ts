@@ -21,6 +21,7 @@ export interface Juego {
   vamarilla: number;
   lpenales: number | null;
   vpenales: number | null;
+  acumulado: boolean;
   logoVisitante?: string;
   logoLocal?: string;
   participanteVisitante?: string;
@@ -387,22 +388,31 @@ export class JuegosService {
       'Semifinal': 'gf',
     };
 
-    type Stats = {
-      pg: number; pe: number; pp: number; p32: number; po: number; pc: number; ps: number; pf: number;
-      dg: number; gf: number; rojas: number; amarillas: number;
-    };
-    const statsVacias = (): Stats => ({ pg: 0, pe: 0, pp: 0, p32: 0, po: 0, pc: 0, ps: 0, pf: 0, dg: 0, gf: 0, rojas: 0, amarillas: 0 });
+    // Estadísticas "de clasificación": siempre se calculan con el historial COMPLETO
+    // de partidos, sin importar si ya fueron acumulados. La clasificación deportiva
+    // (posición de grupo, avance de ronda) no depende de cómo se reparten los puntos.
+    type StatsClasificacion = { pg: number; pe: number; dg: number; gf: number; rojas: number; amarillas: number };
+    const statsClasificacionVacias = (): StatsClasificacion => ({ pg: 0, pe: 0, dg: 0, gf: 0, rojas: 0, amarillas: 0 });
+
+    // Estadísticas "de puntaje": las que se guardan en equipos y alimentan la fórmula
+    // de puntos de cada participante. Solo cuentan partidos NO acumulados aún, para
+    // que un "Acumular" + "Reset" no se deshaga la próxima vez que se recalcule.
+    type StatsPuntaje = { pg: number; pe: number; pp: number; p32: number; po: number; pc: number; ps: number; pf: number };
+    const statsPuntajeVacias = (): StatsPuntaje => ({ pg: 0, pe: 0, pp: 0, p32: 0, po: 0, pc: 0, ps: 0, pf: 0 });
 
     return forkJoin({
-      juegos: from(this.supabaseClient.from('juegos').select('local,visitante,fase,lscore,vscore,posicion,lroja,lamarilla,vroja,vamarilla,lpenales,vpenales')),
+      juegos: from(this.supabaseClient.from('juegos').select('local,visitante,fase,lscore,vscore,posicion,lroja,lamarilla,vroja,vamarilla,lpenales,vpenales,acumulado')),
       equipos: from(this.supabaseClient.from('equipos').select('id,nombre,grupo')),
     }).pipe(
       switchMap(({ juegos, equipos }: any) => {
         if (juegos.error) throw juegos.error;
         if (equipos.error) throw equipos.error;
 
-        const stats: Record<string, Stats> = {};
-        const getStats = (nombre: string): Stats => stats[nombre] ??= statsVacias();
+        const statsClasificacion: Record<string, StatsClasificacion> = {};
+        const getStatsClasificacion = (nombre: string): StatsClasificacion => statsClasificacion[nombre] ??= statsClasificacionVacias();
+
+        const statsPuntaje: Record<string, StatsPuntaje> = {};
+        const getStatsPuntaje = (nombre: string): StatsPuntaje => statsPuntaje[nombre] ??= statsPuntajeVacias();
 
         const avance: Record<string, Partial<Record<'of' | 'cf' | 'sf' | 'gf', string>>> = {};
         const setAvance = (nombre: string, campo: 'of' | 'cf' | 'sf' | 'gf', valor: string) => {
@@ -414,29 +424,37 @@ export class JuegosService {
 
           const lscore = Number(j.lscore);
           const vscore = Number(j.vscore);
-          const localStats = getStats(j.local);
-          const visitanteStats = getStats(j.visitante);
+          const localClasif = getStatsClasificacion(j.local);
+          const visitanteClasif = getStatsClasificacion(j.visitante);
+          const localPuntaje = j.acumulado ? null : getStatsPuntaje(j.local);
+          const visitantePuntaje = j.acumulado ? null : getStatsPuntaje(j.visitante);
 
           if (j.fase === 'Fase de Grupos') {
-            localStats.gf += lscore;
-            visitanteStats.gf += vscore;
-            localStats.dg += lscore - vscore;
-            visitanteStats.dg += vscore - lscore;
-            localStats.rojas += Number(j.lroja ?? 0);
-            visitanteStats.rojas += Number(j.vroja ?? 0);
-            localStats.amarillas += Number(j.lamarilla ?? 0);
-            visitanteStats.amarillas += Number(j.vamarilla ?? 0);
+            localClasif.gf += lscore;
+            visitanteClasif.gf += vscore;
+            localClasif.dg += lscore - vscore;
+            visitanteClasif.dg += vscore - lscore;
+            localClasif.rojas += Number(j.lroja ?? 0);
+            visitanteClasif.rojas += Number(j.vroja ?? 0);
+            localClasif.amarillas += Number(j.lamarilla ?? 0);
+            visitanteClasif.amarillas += Number(j.vamarilla ?? 0);
 
-            if (lscore > vscore) { localStats.pg++; visitanteStats.pp++; }
-            else if (lscore < vscore) { visitanteStats.pg++; localStats.pp++; }
-            else { localStats.pe++; visitanteStats.pe++; }
+            if (lscore > vscore) { localClasif.pg++; }
+            else if (lscore < vscore) { visitanteClasif.pg++; }
+            else { localClasif.pe++; visitanteClasif.pe++; }
+
+            if (localPuntaje && visitantePuntaje) {
+              if (lscore > vscore) { localPuntaje.pg++; visitantePuntaje.pp++; }
+              else if (lscore < vscore) { visitantePuntaje.pg++; localPuntaje.pp++; }
+              else { localPuntaje.pe++; visitantePuntaje.pe++; }
+            }
             continue;
           }
 
           const campoPuntaje = fasePuntajeMap[j.fase];
-          if (campoPuntaje) {
-            if (lscore > vscore) localStats[campoPuntaje]++;
-            else if (lscore < vscore) visitanteStats[campoPuntaje]++;
+          if (campoPuntaje && localPuntaje && visitantePuntaje) {
+            if (lscore > vscore) localPuntaje[campoPuntaje]++;
+            else if (lscore < vscore) visitantePuntaje[campoPuntaje]++;
           }
 
           const campoAvance = faseAvanceMap[j.fase];
@@ -455,10 +473,11 @@ export class JuegosService {
         }
 
         // Criterios de desempate de grupo: puntos, diferencia de goles, goles a favor,
-        // partidos ganados, menos tarjetas rojas, menos tarjetas amarillas.
+        // partidos ganados, menos tarjetas rojas, menos tarjetas amarillas. Siempre con
+        // el historial completo de partidos de grupo, sin importar si ya se acumularon.
         const compararEquipos = (nombreA: string, nombreB: string): number => {
-          const a = stats[nombreA] ?? statsVacias();
-          const b = stats[nombreB] ?? statsVacias();
+          const a = statsClasificacion[nombreA] ?? statsClasificacionVacias();
+          const b = statsClasificacion[nombreB] ?? statsClasificacionVacias();
           const ptsA = a.pg * 3 + a.pe;
           const ptsB = b.pg * 3 + b.pe;
           if (ptsB !== ptsA) return ptsB - ptsA;
@@ -491,7 +510,7 @@ export class JuegosService {
         });
 
         const updates = (equipos.data ?? []).map((e: any) => {
-          const s = stats[e.nombre] ?? statsVacias();
+          const s = statsPuntaje[e.nombre] ?? statsPuntajeVacias();
           const av = avance[e.nombre] ?? {};
           return from(
             this.supabaseClient
@@ -510,6 +529,27 @@ export class JuegosService {
 
         if (!updates.length) return of({ ok: true as const });
         return forkJoin(updates).pipe(map(() => ({ ok: true as const })));
+      })
+    );
+  }
+
+  /**
+   * Marca como acumulados todos los partidos con marcador que aún no lo estaban.
+   * A partir de ahí, recalcularPuntajesEquipos() deja de contarlos para pg/pe/pp/p32/po/pc/ps/pf
+   * (ya quedaron reflejados en el "acumulado" del participante), evitando que un partido
+   * vuelva a sumar puntos tras un "Acumular" + "Reset puntajes".
+   */
+  marcarJuegosAcumulados(): Observable<{ ok: true }> {
+    return from(
+      this.supabaseClient
+        .from('juegos')
+        .update({ acumulado: true })
+        .eq('acumulado', false)
+        .not('lscore', 'is', null)
+    ).pipe(
+      map(({ error }: any) => {
+        if (error) throw error;
+        return { ok: true as const };
       })
     );
   }
