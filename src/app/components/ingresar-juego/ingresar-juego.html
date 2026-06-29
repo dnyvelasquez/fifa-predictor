@@ -128,7 +128,13 @@
 
       @if (juegos.length > 0) {
         <div class="juegos-container">
-          <h2>Juegos Ingresados</h2>
+          <div class="juegos-header">
+            <h2>Juegos Ingresados</h2>
+            <button mat-stroked-button color="accent" (click)="recalcularTodo()" [disabled]="saving" aria-label="Recalcular puntajes">
+              <mat-icon>refresh</mat-icon>
+              Recalcular puntajes
+            </button>
+          </div>
           <div class="table-wrapper">
             <table mat-table [dataSource]="juegos" class="mat-elevation-z8">
               <ng-container matColumnDef="local">

@@ -153,7 +153,7 @@ export class ParticipantesService {
         const totales: Record<string, number> = {};
         for (const row of asign.data ?? []) {
           const nombre = (row.participante || '').trim();
-          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.p32 ?? 0) * 20 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pc ?? 0) * 30 + (row.equipos?.ps ?? 0) * 40 + (row.equipos?.pf ?? 0) * 50);
+          const pts = Number((row.equipos?.pg ?? 0) * 10 + (row.equipos?.pe ?? 0) * 5 + (row.equipos?.p32 ?? 0) * 10 + (row.equipos?.po ?? 0) * 20 + (row.equipos?.pc ?? 0) * 30 + (row.equipos?.ps ?? 0) * 40 + (row.equipos?.pf ?? 0) * 50);
           if (!nombre || !pts) continue;
           totales[nombre] = (totales[nombre] ?? 0) + pts;
         }

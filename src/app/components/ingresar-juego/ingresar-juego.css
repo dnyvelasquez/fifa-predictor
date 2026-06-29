@@ -101,9 +101,16 @@
   border-top: 2px solid #ddd;
 }
 
-.juegos-container h2 {
-  color: white;
+.juegos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
+}
+
+.juegos-header h2 {
+  color: white;
+  margin-bottom: 0;
   font-size: 24px;
   font-weight: bold;
 }

@@ -266,6 +266,17 @@ async actualizarScore(juego: Juego): Promise<void> {
     }
   }
 
+  async recalcularTodo(): Promise<void> {
+    this.saving = true;
+    try {
+      await this.recalcularPuntajes();
+      this.showMessage('Puntajes recalculados correctamente', 'success');
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   private async recalcularPuntajes(): Promise<void> {
     try {
       await this.juegosService.recalcularPuntajesEquipos().pipe(takeUntil(this.destroy$)).toPromise();

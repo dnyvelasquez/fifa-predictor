@@ -455,6 +455,7 @@ export class JuegosService {
           if (campoPuntaje && localPuntaje && visitantePuntaje) {
             if (lscore > vscore) localPuntaje[campoPuntaje]++;
             else if (lscore < vscore) visitantePuntaje[campoPuntaje]++;
+            else { localPuntaje[campoPuntaje] += 0.5; visitantePuntaje[campoPuntaje] += 0.5; }
           }
 
           const campoAvance = faseAvanceMap[j.fase];
